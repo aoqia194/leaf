@@ -1,0 +1,16 @@
+{
+    "latest": {
+        "release": "41.78.16",
+        "snapshot": "None"
+    },
+    "versions": [
+        {
+            "id": "41.78.16",
+            "type": "release",
+            "time": "2024-11-11T17:06:37+00:00",
+            "releaseTime": "2022-11-07T21:17:52+00:00",
+            "manifestId": "597900166880863308",
+            "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/serverIndexes/win/41.78.16.json"
+        }
+    ]
+}
