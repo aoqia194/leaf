@@ -8,22 +8,18 @@ import datetime
 regex.cache_all()
 
 SCRIPT_DIR = pathlib.Path(__file__).parent
-INDEXES_DIR = SCRIPT_DIR.parent.joinpath("indexes")
-MANIFESTS_DIR = SCRIPT_DIR.parent.joinpath("manifests")
+INDEXES_DIR = SCRIPT_DIR.parent.joinpath("serverIndexes", "win")
+MANIFESTS_DIR = SCRIPT_DIR.parent.joinpath("serverManifests", "win")
 
 VERSION_TABLE = {
-    "7649580527091758034": "41.78.16",
-    "6479059061804356642": "41.78.15",
-    "6168490958362210069": "41.78.13",
+    "597900166880863308": "41.78.16",
 }
 
-VERSION_SNAPSHOT_TABLE = {
-    "8862225121663207731": "41.78.13-IWBUMS",
-}
+VERSION_SNAPSHOT_TABLE = {}
 
-LATEST_VER = list(VERSION_TABLE.values())[0]
-LATEST_SNAPSHOT = list(VERSION_SNAPSHOT_TABLE.values())[0]
-print(f"Latest Zomboid versions according to script (update if needed):\nLatest = {
+LATEST_VER = list(VERSION_TABLE.values())[0] if len(VERSION_TABLE.values()) > 0 else "None"
+LATEST_SNAPSHOT = list(VERSION_SNAPSHOT_TABLE.values())[0] if len(VERSION_SNAPSHOT_TABLE.values()) > 0 else "None"
+print(f"Latest Zomboid Dedicated Server (Windows Depot) versions according to script (update if needed):\nLatest = {
       LATEST_VER}\nSnapshot = {LATEST_SNAPSHOT}")
 
 DEPOT_MANIFEST = pathlib.Path(sys.argv[1]).resolve()
@@ -110,11 +106,11 @@ def is_newer_version(older: str, newer: str):
         bool: True if B is newer than A
     """
 
-    old_iwbums = older.find("IWBUMS")
-    new_iwbums = newer.find("IWBUMS")
+    old_unstable = older.find("UNSTABLE")
+    new_unstable = newer.find("UNSTABLE")
 
-    older = older.removesuffix("-IWBUMS")
-    newer = newer.removesuffix("-IWBUMS")
+    older = older.removesuffix("-UNSTABLE")
+    newer = newer.removesuffix("-UNSTABLE")
 
     old_vers = [int(x) for x in older.split(".")]
     new_vers = [int(x) for x in newer.split(".")]
@@ -126,7 +122,7 @@ def is_newer_version(older: str, newer: str):
         return True
     elif new_vers[1] > old_vers[1]:
         return True
-    elif (new_vers[2] > old_vers[2]) or (new_vers[2] == old_vers[2] and new_iwbums and not old_iwbums):
+    elif (new_vers[2] > old_vers[2]) or (new_vers[2] == old_vers[2] and new_unstable and not old_unstable):
         return True
 
     return False
@@ -193,7 +189,10 @@ def main():
     """entrypoint"""
 
     if not INDEXES_DIR.exists():
-        INDEXES_DIR.mkdir()
+        INDEXES_DIR.mkdir(parents=True)
+
+    if not MANIFESTS_DIR.exists():
+        MANIFESTS_DIR.mkdir(parents=True)
 
     data = parse_depot_data()
     assert data is not None
@@ -257,34 +256,31 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
     version_manifest = MANIFESTS_DIR.joinpath("version_manifest.json")
 
+    manifest_data_table = {
+        "id": manifest_version,
+        "type": "release",
+        "time": now,
+        "releaseTime": manifest_date,
+        "manifestId": manifest_id,
+        "url": f"https://github.com/aoqia194/leaf/raw/refs/heads/main/serverIndexes/win/{manifest_version}.json",
+    }
     # Defaults to generate new manifest file
     if not version_manifest.exists():
-        manifests_data["versions"].append({
-            "id": manifest_version,
-            "type": "release",
-            "time": now,
-            "releaseTime": manifest_date,
-            "manifestId": manifest_id,
-            "url": f"https://github.com/aoqia194/leaf/raw/refs/heads/main/indexes/{manifest_version}.json",
-        })
+        manifests_data["versions"].append(manifest_data_table)
     else:
         with open(version_manifest, "r", encoding="utf-8") as f:
             data: VersionManifestNameInfo = json.load(f)
 
             # Update manifest versions if needed
-            if is_newer_version(data["latest"]["release"], manifest_version):
+            if "None" not in LATEST_VER and is_newer_version(data["latest"]["release"], manifest_version):
                 data["latest"]["release"] = LATEST_VER
-            if is_newer_version(data["latest"]["snapshot"], manifest_version):
+            if "None" not in LATEST_SNAPSHOT and is_newer_version(data["latest"]["snapshot"], manifest_version):
                 data["latest"]["snapshot"] = LATEST_SNAPSHOT
 
-            data["versions"].insert(0, {
-                "id": manifest_version,
-                "type": "release",
-                "time": now,
-                "releaseTime": manifest_date,
-                "manifestId": manifest_id,
-                "url": f"https://github.com/aoqia194/leaf/raw/refs/heads/main/indexes/{manifest_version}.json",
-            })
+            # Don't update versions if the version already exists
+            if not manifest_version in [x["id"] for x in data["versions"]]:
+                data["versions"].insert(0, manifest_data_table)
+            
             manifests_data = data
 
     json_data = json.dumps(manifests_data, indent=4)
