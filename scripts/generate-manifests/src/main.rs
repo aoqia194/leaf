@@ -459,6 +459,13 @@ fn parse_depot_manifest(path: &PathBuf) -> DepotManifest {
         let sha1 = captures[3].to_owned();
         let flags = captures[4].to_owned();
         let name = captures[5].to_owned();
+
+        // If size is 0, the file is a directory.
+        // We don't store directories because they're useless information.
+        if size == 0 {
+            continue;
+        }
+
         data.entries.insert(name, DepotManifestEntry {
             size,
             chunks,
