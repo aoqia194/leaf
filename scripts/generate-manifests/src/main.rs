@@ -98,6 +98,7 @@ struct LauncherLibrary {
 struct LauncherManifest {
     arguments: LauncherArgs,
     java_version: LauncherJavaVersion,
+    libraries: Vec<LauncherLibrary>,
     main_class: String,
     release_time: String,
     time: String,
@@ -174,12 +175,22 @@ const ENVIRONMENT_SUBDIRS: [&str; 2] = ["client", "server"];
 const VERSION_MANIFEST_JSON: &str = "version_manifest.json";
 const VERSION_TABLE_JSON: &str = "version_table.json";
 
+const ARGS: LazyLock<Vec<String>> = LazyLock::new(|| env::args().collect());
+const ARGS_MIN: usize = 2;
+const ARGS_EXAMPLE: [&str; 2] = ["path/to/depots", "--force"];
+
 static DEPOT_HEADER_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     // (?:^Content Manifest for Depot (\d+)$)|(?:^Manifest ID \/ date\s*\:\s*(\d+)\s*\/\s*([^\n]+)$)|(?:^Total number of files\s*\:\s*(\d+)$)|(?:^Total number of chunks\s*\:\s*(\d+)$)|(?:^Total bytes on disk\s*\:\s*(\d+)$)|(?:^Total bytes compressed\s*\:\s*(\d+)$)|(?:^ *(Size)\s*(Chunks)\s*(File SHA)\s*(Flags)\s*(Name))
     Regex::new(r"(?:^Content Manifest for Depot (\d+)$)|(?:^Manifest ID \/ date\s*\:\s*(\d+)\s*\/\s*([^\n]+)$)|(?:^Total number of files\s*\:\s*(\d+)$)|(?:^Total number of chunks\s*\:\s*(\d+)$)|(?:^Total bytes on disk\s*\:\s*(\d+)$)|(?:^Total bytes compressed\s*\:\s*(\d+)$)").unwrap()
 });
 static DEPOT_ENTRY_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?:^ *(\d+)\s*(\d+)\s*(\w+)\s*(\d+)\s*([^\n]*))").unwrap());
+
+fn is_force() -> bool {
+    return ARGS
+        .get(2)
+        .is_some_and(|s| s.as_str() == "--force" || s.as_str() == "-f");
+}
 
 fn get_utc_now() -> String {
     let time = Utc::now().naive_utc().to_string().replace(" UTC", "");
@@ -234,6 +245,7 @@ fn generate_launcher_manifest(
             component: String::from("java-runtime-delta"),
             major_version: 17,
         },
+        libraries: Vec::new(),
         main_class: String::new(),
         release_time: depot.manifest_date.to_owned(),
         time: get_utc_now(),
@@ -251,6 +263,13 @@ fn generate_launcher_manifest(
     }
 
     let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
+
+    // If the manifest already exists and don't force overwrite it then do nothing
+    if is_force() && fs::exists(out_file.to_owned()).is_ok() {
+        debug!("Launcher manifest already exists. Skipping.");
+        return;
+    }
+
     let file = fs::File::create(out_file).unwrap();
     let writer = BufWriter::new(file);
 
@@ -697,13 +716,12 @@ fn setup_logger() {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Handle program args
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
+    if ARGS.len() < ARGS_MIN {
         panic!("Not enough arguments");
-    } else if args.len() > 2 {
+    } else if ARGS.len() > ARGS_EXAMPLE.len() + 1 {
         panic!("Too many arguments");
     }
-    let in_depots_dir = PathBuf::from(&args[1]);
+    let in_depots_dir = PathBuf::from(&ARGS[1]);
 
     let exe_path = current_exe().unwrap();
     let exe_dir = exe_path.parent().unwrap();
@@ -751,6 +769,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     setup_logger();
     info!("Hello! I am going to generate some manifests for you <3");
+    trace!("force: {}", is_force());
 
     let version_table = get_version_table(&leaf_dir.join(VERSION_TABLE_JSON));
     generate_client_manifests(
