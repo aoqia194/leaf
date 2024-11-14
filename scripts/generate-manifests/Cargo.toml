@@ -1,0 +1,17 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "generate-manifests"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.38"
+quanta = "0.12.3"
+regex = "1.11.1"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.132"
+strum = { version = "0.26.3", features = ["derive"] }
+tracing = "0.1.40"
+tracing-appender = "0.2.3"
+tracing-subscriber = { version = "0.3.18", features = ["fmt"] }
