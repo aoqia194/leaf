@@ -16,6 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: cd scripts/generate-manifests && cargo build --verbose
+      run: cd scripts/generate-manifests && rustup override set nightly && cargo build --verbose
     - name: Run tests
-      run: cd scripts/generate-manifests && cargo test --verbose
+      run: cd scripts/generate-manifests && rustup override set nightly && cargo test --verbose
