@@ -204,8 +204,6 @@ fn get_utc_now() -> String {
     let time = Utc::now().naive_utc().to_string().replace(" UTC", "");
     let time = time[..19].to_string().replace(" ", "T") + "+00:00";
 
-    warn!("UTC NOW {}", time);
-
     return time;
 }
 
@@ -253,10 +251,11 @@ fn generate_launcher_manifest(
     // Get asset index info like hash and size.
 
     let mut file = fs::File::open(asset_index).expect("Failed to open asset index file");
-    let mut buf: Vec<u8> = Vec::new();
 
+    let mut buf: Vec<u8> = Vec::new();
     let size = file.read_to_end(&mut buf).unwrap();
     let sha1 = Sha1::digest(buf);
+    drop(file);
 
     let mut manifest = LauncherManifest {
         arguments: LauncherArgs { game: Vec::new() },
