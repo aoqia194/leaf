@@ -95,7 +95,7 @@ struct LauncherLibrary {
     rules: Vec<LauncherRules>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct LauncherAssetIndex {
     sha1: String,
     size: usize,
@@ -147,7 +147,6 @@ struct DepotManifestEntry {
     flags: String,
 }
 
-#[derive(Debug)]
 struct DepotManifest {
     depot_id: u64,
     manifest_id: u64,
@@ -228,7 +227,7 @@ fn generate_indexes_manifest(
 
     let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
     let file = fs::File::create(out_file).unwrap();
-    let writer = BufWriter::new(file);
+    let writer = BufWriter::new(&file);
 
     // Write depot entries to file.
     serde_json::to_writer(writer, &depot.entries)
@@ -238,6 +237,8 @@ fn generate_indexes_manifest(
         "Generating indexes manifest took {}ms",
         now.elapsed().as_millis()
     );
+
+    drop(file);
 }
 
 fn generate_launcher_manifest(
@@ -295,7 +296,7 @@ fn generate_launcher_manifest(
     let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
 
     // If the manifest already exists and don't force overwrite it then do nothing
-    if is_force() && fs::exists(out_file.to_owned()).is_ok() {
+    if !is_force() && fs::exists(out_file.to_owned()).is_ok() {
         debug!("Launcher manifest already exists. Skipping.");
         return;
     }
