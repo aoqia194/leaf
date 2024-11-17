@@ -5,9 +5,10 @@ use metadata::LevelFilter;
 use quanta::{self, Instant};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use sha1::{Digest, Sha1};
 use std::collections::HashMap;
 use std::env::{self, current_exe};
-use std::io::{BufRead, BufReader, BufWriter, stdout};
+use std::io::{BufRead, BufReader, BufWriter, Read, stdout};
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use std::{fs, u64};
@@ -95,8 +96,16 @@ struct LauncherLibrary {
 }
 
 #[derive(Serialize, Deserialize)]
+struct LauncherAssetIndex {
+    sha1: String,
+    size: usize,
+    url: String,
+}
+
+#[derive(Serialize, Deserialize)]
 struct LauncherManifest {
     arguments: LauncherArgs,
+    asset_index: LauncherAssetIndex,
     java_version: LauncherJavaVersion,
     libraries: Vec<LauncherLibrary>,
     main_class: String,
@@ -234,13 +243,34 @@ fn generate_indexes_manifest(
 fn generate_launcher_manifest(
     depot: &DepotManifest,
     game_version: &String,
+    asset_index: &PathBuf,
     out_platform_dir: &PathBuf,
 ) {
     let now = Instant::now();
     info!("Generating launcher manifest.");
 
+    // Get asset index info like hash and size.
+
+    let mut file = fs::File::open(asset_index).expect("Failed to open asset index file");
+    let mut buf: Vec<u8> = Vec::new();
+
+    let size = file.read_to_end(&mut buf).unwrap();
+    let sha1 = Sha1::digest(buf);
+
     let mut manifest = LauncherManifest {
         arguments: LauncherArgs { game: Vec::new() },
+        asset_index: LauncherAssetIndex {
+            sha1: format!("{:x}", sha1),
+            size,
+            url: INDEXES_URL.to_owned()
+                + "/"
+                + get_env_from_platform_dir(out_platform_dir)
+                + "/"
+                + get_os_from_platform_dir(out_platform_dir)
+                + "/"
+                + game_version
+                + ".json",
+        },
         java_version: LauncherJavaVersion {
             component: String::from("java-runtime-delta"),
             major_version: 17,
@@ -568,6 +598,10 @@ fn generate_server_manifests(
         generate_launcher_manifest(
             &depot_manifest,
             &game_version,
+            &out_indexes_dir
+                .join(ENVIRONMENT_SUBDIRS[1])
+                .join(SERVER_PLATFORM_SUBDIRS[i])
+                .join(game_version.to_owned() + ".json"),
             &out_manifests_dir
                 .join(ENVIRONMENT_SUBDIRS[1])
                 .join(SERVER_PLATFORM_SUBDIRS[i]),
@@ -645,6 +679,10 @@ fn generate_client_manifests(
         generate_launcher_manifest(
             &depot_manifest,
             &game_version,
+            &out_indexes_dir
+                .join(ENVIRONMENT_SUBDIRS[0])
+                .join(CLIENT_PLATFORM_SUBDIRS[i].to_owned())
+                .join(game_version.to_owned() + ".json"),
             &out_manifests_dir
                 .join(ENVIRONMENT_SUBDIRS[0])
                 .join(CLIENT_PLATFORM_SUBDIRS[i]),
