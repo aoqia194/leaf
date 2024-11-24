@@ -227,9 +227,21 @@ fn generate_indexes_manifest(
     let file = fs::File::create(out_file).unwrap();
     let writer = BufWriter::new(&file);
 
+    // Rebuild entries into index objects.
+    let mut objects: HashMap<String, AssetIndexObject> = HashMap::new();
+    for entry in &depot.entries {
+        let object = AssetIndexObject {
+            hash: entry.1.sha1.to_owned(),
+            size: entry.1.size.to_owned(),
+        };
+
+        objects.insert(entry.0.to_owned(), object);
+    }
+
+    let manifest = AssetIndexManifest { objects };
+
     // Write depot entries to file.
-    serde_json::to_writer(writer, &depot.entries)
-        .expect("Failed to write json to indexes manifest");
+    serde_json::to_writer(writer, &manifest).expect("Failed to write json to indexes manifest");
 
     debug!(
         "Generating indexes manifest took {}ms",
