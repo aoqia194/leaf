@@ -294,7 +294,7 @@ fn generate_launcher_manifest(
         version: game_version.to_owned(),
     };
 
-    if get_os_from_platform_dir(out_platform_dir) == "client" {
+    if get_env_from_platform_dir(out_platform_dir) == "client" {
         manifest.main_class = String::from("zombie.gameStates.MainScreenState");
     } else {
         manifest.main_class = String::from("zombie.network.Server");
