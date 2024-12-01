@@ -118,6 +118,7 @@ struct LauncherManifest {
 struct VersionEntry {
     id: String,
     url: String,
+    sha1: String,
     time: String,
     release_time: String,
 }
@@ -338,6 +339,19 @@ fn generate_version_manifest(
 
     let out_file = out_platform_dir.join(VERSION_MANIFEST_JSON);
 
+    // Since the version manifest is already generated before this function is called
+    // We can read it and get it's hash.
+    let version_file = out_platform_dir.join(game_version.to_owned() + ".json");
+    let mut file =
+        fs::File::open(version_file).expect("Failed to open version manifest file for hashing.");
+
+    // Read to end and get hash
+    let mut buf: Vec<u8> = Vec::new();
+    let size = file.read_to_end(&mut buf).unwrap();
+    let sha1 = Sha1::digest(buf);
+    drop(file);
+
+    // Create dummy to-be-inserted version entry.
     let version_entry = VersionEntry {
         id: game_version.to_owned(),
         url: MANIFESTS_URL.to_owned()
@@ -348,6 +362,7 @@ fn generate_version_manifest(
             + "/"
             + game_version
             + ".json",
+        sha1: format!("{:x}", sha1),
         time: get_utc_now(),
         release_time: depot.manifest_date.to_owned(),
     };
