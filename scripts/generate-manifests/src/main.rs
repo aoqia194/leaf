@@ -1,6 +1,6 @@
 #![feature(variant_count)]
 
-use chrono::Utc;
+use chrono::{NaiveDateTime, Utc};
 use metadata::LevelFilter;
 use quanta::{self, Instant};
 use regex::Regex;
@@ -8,7 +8,9 @@ use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::collections::HashMap;
 use std::env::{self, current_exe};
-use std::io::{BufRead, BufReader, BufWriter, Read, stdout};
+use std::fs::DirEntry;
+use std::io::{BufRead, BufReader, BufWriter, Error, Read, stdout};
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use std::{fs, u64};
@@ -114,7 +116,7 @@ struct LauncherManifest {
     version: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct VersionEntry {
     id: String,
     url: String,
@@ -188,6 +190,8 @@ const ARGS: LazyLock<Vec<String>> = LazyLock::new(|| env::args().collect());
 const ARGS_MIN: usize = 2;
 const ARGS_EXAMPLE: [&str; 2] = ["path/to/depots", "--force"];
 
+const JAVATIME_FORMAT_STR: &str = "%Y-%m-%dT%H:%M:%S%z";
+
 static DEPOT_HEADER_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     // (?:^Content Manifest for Depot (\d+)$)|(?:^Manifest ID \/ date\s*\:\s*(\d+)\s*\/\s*([^\n]+)$)|(?:^Total number of files\s*\:\s*(\d+)$)|(?:^Total number of chunks\s*\:\s*(\d+)$)|(?:^Total bytes on disk\s*\:\s*(\d+)$)|(?:^Total bytes compressed\s*\:\s*(\d+)$)|(?:^ *(Size)\s*(Chunks)\s*(File SHA)\s*(Flags)\s*(Name))
     Regex::new(r"(?:^Content Manifest for Depot (\d+)$)|(?:^Manifest ID \/ date\s*\:\s*(\d+)\s*\/\s*([^\n]+)$)|(?:^Total number of files\s*\:\s*(\d+)$)|(?:^Total number of chunks\s*\:\s*(\d+)$)|(?:^Total bytes on disk\s*\:\s*(\d+)$)|(?:^Total bytes compressed\s*\:\s*(\d+)$)").unwrap()
@@ -201,11 +205,19 @@ fn is_force() -> bool {
         .is_some_and(|s| s.as_str() == "--force" || s.as_str() == "-f");
 }
 
-fn get_utc_now() -> String {
-    let time = Utc::now().naive_utc().to_string().replace(" UTC", "");
-    let time = time[..19].to_string().replace(" ", "T") + "+00:00";
+fn to_timestr(time: NaiveDateTime) -> String {
+    return time.format(JAVATIME_FORMAT_STR).to_string();
+}
 
-    return time;
+fn from_timestr(time: &String) -> NaiveDateTime {
+    return NaiveDateTime::parse_from_str(time.as_str(), JAVATIME_FORMAT_STR).unwrap();
+}
+
+fn get_now_timestr() -> String {
+    return Utc::now()
+        .naive_utc()
+        .format("%Y-%m-%dT%H:%M:%S+00:00")
+        .to_string();
 }
 
 fn get_env_from_platform_dir(dir: &PathBuf) -> &str {
@@ -261,6 +273,36 @@ fn generate_launcher_manifest(
     let now = Instant::now();
     info!("Generating launcher manifest.");
 
+    let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
+
+    // Check if manifest exists and check date of manifest since versions can be the same id but different depots.
+    if !is_force() && fs::exists(out_file.to_owned()).unwrap_or(false) {
+        let file =
+            fs::File::open(out_file.to_owned()).expect("Failed to open existing launcher manifest");
+        let reader = BufReader::new(file);
+        let existing_manifest: Result<LauncherManifest, serde_json::Error> =
+            serde_json::from_reader(reader);
+
+        // If it errors, just nuke the file.
+        if existing_manifest.is_err() {
+            debug!("Failed to parse existing launcher manifest, nuking it.");
+            fs::remove_file(out_file.to_owned()).unwrap();
+        } else if from_timestr(&existing_manifest.unwrap().release_time)
+            <= from_timestr(&depot.manifest_date)
+        {
+            info!(
+                "Found launcher manifest with the same version but an older release date. Overwriting with the newer one."
+            );
+        } else {
+            debug!(
+                "Launcher manifest already exists with version {} at path {}.",
+                game_version.to_owned(),
+                out_file.to_owned().to_str().unwrap()
+            );
+            return;
+        }
+    }
+
     // Get asset index info like hash and size.
 
     let mut file = fs::File::open(asset_index).expect("Failed to open asset index file");
@@ -286,12 +328,12 @@ fn generate_launcher_manifest(
         },
         java_version: LauncherJavaVersion {
             component: String::from("java-runtime-delta"),
-            major_version: 17,
+            major_version: 0,
         },
         libraries: Vec::new(),
         main_class: String::new(),
         release_time: depot.manifest_date.to_owned(),
-        time: get_utc_now(),
+        time: get_now_timestr(),
         version: game_version.to_owned(),
     };
 
@@ -303,18 +345,6 @@ fn generate_launcher_manifest(
 
     if game_version.as_str() >= "41.78.16" {
         manifest.java_version.major_version = 17;
-    }
-
-    let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
-
-    // If the manifest already exists and don't force overwrite it then do nothing
-    if !is_force() && fs::exists(out_file.to_owned()).unwrap_or(false) {
-        debug!(
-            "Launcher manifest already exists with version {} at path {}. Skipping.",
-            game_version.to_owned(),
-            out_file.to_owned().to_str().unwrap()
-        );
-        return;
     }
 
     let file = fs::File::create(out_file).unwrap();
@@ -343,11 +373,11 @@ fn generate_version_manifest(
 
     let out_file = out_platform_dir.join(VERSION_MANIFEST_JSON);
 
-    // Since the version manifest is already generated before this function is called
+    // Since the launcher manifest is already generated before this function is called
     // We can read it and get it's hash.
     let version_file = out_platform_dir.join(game_version.to_owned() + ".json");
     let mut file =
-        fs::File::open(version_file).expect("Failed to open version manifest file for hashing.");
+        fs::File::open(version_file).expect("Failed to open launcher manifest file for hashing.");
 
     // Read to end and get hash
     let mut buf: Vec<u8> = Vec::new();
@@ -367,7 +397,7 @@ fn generate_version_manifest(
             + game_version
             + ".json",
         sha1: format!("{:x}", sha1),
-        time: get_utc_now(),
+        time: get_now_timestr(),
         release_time: depot.manifest_date.to_owned(),
     };
 
@@ -386,6 +416,8 @@ fn generate_version_manifest(
 
     // Add version if needed if file already exists, else create.
     if out_file.to_owned().exists() {
+        // File exists, append to other versions.
+
         let file = fs::File::open(out_file.to_owned()).unwrap();
         let reader = BufReader::new(file);
 
@@ -404,8 +436,24 @@ fn generate_version_manifest(
         } else if game_version < &version_manifest.versions.last().unwrap().id {
             version_manifest.versions.push(version_entry);
         } else {
-            info!("Version already exists in version manifest.");
-            return;
+            let mut old = false;
+            for entry in &mut version_manifest.versions {
+                if entry.id == game_version.as_str()
+                    && from_timestr(&entry.release_time)
+                        <= from_timestr(&version_entry.release_time)
+                {
+                    debug!(
+                        "Version found in manifest is the same but an older depot. Updating the entry."
+                    );
+                    *entry = version_entry.clone();
+                    old = true;
+                }
+            }
+
+            if !old {
+                info!("Version already exists in version manifest.");
+                return;
+            }
         }
 
         let file = fs::File::create(out_file).unwrap();
@@ -413,6 +461,8 @@ fn generate_version_manifest(
         serde_json::to_writer(writer, &version_manifest)
             .expect("Failed to edit and write json to version manifest");
     } else {
+        // New file, just write and done.
+
         let file = fs::File::create(out_file).unwrap();
         let writer = BufWriter::new(file);
 
@@ -432,41 +482,6 @@ fn generate_version_manifest(
         "Generating version manifest took {}ms",
         now.elapsed().as_millis()
     );
-}
-
-fn get_depot_manifest(in_depots_dir: &PathBuf, depot_id: &str) -> PathBuf {
-    let now = Instant::now();
-    info!("Finding depot {} manifest.", depot_id);
-
-    let subdir: PathBuf = fs::read_dir(in_depots_dir.join(depot_id))
-        .unwrap()
-        .nth(0)
-        .unwrap()
-        .unwrap()
-        .path();
-    let file: PathBuf = fs::read_dir(&subdir)
-        .unwrap()
-        .filter_map(|entry| {
-            entry
-                .as_ref()
-                .unwrap()
-                .file_type()
-                .unwrap()
-                .is_file()
-                .then(|| entry.unwrap().path())
-        })
-        .collect::<Vec<PathBuf>>()
-        .get(0)
-        .unwrap()
-        .to_owned();
-
-    debug!(
-        "Found depot manifest at path {:?} after {}ms",
-        file.as_os_str(),
-        now.elapsed().as_millis()
-    );
-
-    return file;
 }
 
 fn parse_depot_manifest(path: &PathBuf) -> DepotManifest {
@@ -591,61 +606,88 @@ fn generate_server_manifests(
         let now2 = Instant::now();
         info!("Generating server manifests for depot {}", depot_id);
 
-        let depot_file = get_depot_manifest(in_depots_dir, depot_id);
-        let depot_manifest = parse_depot_manifest(&depot_file);
-
-        let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
-        // release, snapshot
-        let latest_versions = (
-            version_entry
-                .iter()
-                .filter_map(|s| s.1.contains("-IWBUMS").eq(&false).then(|| s.1.to_owned()))
-                .collect::<Vec<String>>()
-                .get(0)
-                .unwrap_or(&String::new())
-                .to_owned(),
-            version_entry
-                .iter()
-                .filter_map(|s| s.1.contains("-IWBUMS").then(|| s.1.to_owned()))
-                .collect::<Vec<String>>()
-                .get(0)
-                .unwrap_or(&String::new())
-                .to_owned(),
-        );
-
-        let game_version = version_entry
-            .get(&depot_manifest.manifest_id.to_string())
+        for buildid_dir in &fs::read_dir(in_depots_dir.join(depot_id))
             .unwrap()
-            .to_owned();
+            .map(|dir| dir.expect("Failed to get buildid directory"))
+            .collect::<Vec<DirEntry>>()
+        {
+            debug!(
+                "Found build dir at path {}",
+                buildid_dir.path().to_str().unwrap()
+            );
 
-        generate_indexes_manifest(
-            &depot_manifest,
-            &game_version,
-            &out_indexes_dir
-                .join(ENVIRONMENT_SUBDIRS[1])
-                .join(SERVER_PLATFORM_SUBDIRS[i]),
-        );
+            for depot_file in &fs::read_dir(buildid_dir.path())
+                .unwrap()
+                .filter_map(|entry| {
+                    entry
+                        .as_ref()
+                        .unwrap()
+                        .file_type()
+                        .unwrap()
+                        .is_file()
+                        .then(|| entry.unwrap().path())
+                })
+                .collect::<Vec<PathBuf>>()
+            {
+                debug!("Found depot manifest at path {:?}", depot_file.as_os_str());
+                let depot_manifest = parse_depot_manifest(&depot_file);
 
-        generate_launcher_manifest(
-            &depot_manifest,
-            &game_version,
-            &out_indexes_dir
-                .join(ENVIRONMENT_SUBDIRS[1])
-                .join(SERVER_PLATFORM_SUBDIRS[i])
-                .join(game_version.to_owned() + ".json"),
-            &out_manifests_dir
-                .join(ENVIRONMENT_SUBDIRS[1])
-                .join(SERVER_PLATFORM_SUBDIRS[i]),
-        );
+                let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
+                // release, snapshot
+                let latest_versions = (
+                    version_entry
+                        .iter()
+                        .filter_map(|s| {
+                            s.1.contains("-unstable").eq(&false).then(|| s.1.to_owned())
+                        })
+                        .collect::<Vec<String>>()
+                        .get(0)
+                        .unwrap_or(&String::new())
+                        .to_owned(),
+                    version_entry
+                        .iter()
+                        .filter_map(|s| s.1.contains("-unstable").then(|| s.1.to_owned()))
+                        .collect::<Vec<String>>()
+                        .get(0)
+                        .unwrap_or(&String::new())
+                        .to_owned(),
+                );
 
-        generate_version_manifest(
-            &depot_manifest,
-            &game_version,
-            &latest_versions,
-            &out_manifests_dir
-                .join(ENVIRONMENT_SUBDIRS[1])
-                .join(SERVER_PLATFORM_SUBDIRS[i]),
-        );
+                let game_version = version_entry
+                    .get(&depot_manifest.manifest_id.to_string())
+                    .unwrap()
+                    .to_owned();
+
+                generate_indexes_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &out_indexes_dir
+                        .join(ENVIRONMENT_SUBDIRS[1])
+                        .join(SERVER_PLATFORM_SUBDIRS[i]),
+                );
+
+                generate_launcher_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &out_indexes_dir
+                        .join(ENVIRONMENT_SUBDIRS[1])
+                        .join(SERVER_PLATFORM_SUBDIRS[i])
+                        .join(game_version.to_owned() + ".json"),
+                    &out_manifests_dir
+                        .join(ENVIRONMENT_SUBDIRS[1])
+                        .join(SERVER_PLATFORM_SUBDIRS[i]),
+                );
+
+                generate_version_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &latest_versions,
+                    &out_manifests_dir
+                        .join(ENVIRONMENT_SUBDIRS[1])
+                        .join(SERVER_PLATFORM_SUBDIRS[i]),
+                );
+            }
+        }
 
         debug!(
             "Generating server manifests for depot {} took {}ms",
@@ -672,61 +714,88 @@ fn generate_client_manifests(
         let now2 = Instant::now();
         info!("Generating client manifests for depot {}", depot_id);
 
-        let depot_file = get_depot_manifest(in_depots_dir, depot_id);
-        let depot_manifest = parse_depot_manifest(&depot_file);
-
-        let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
-        // release, snapshot
-        let latest_versions = (
-            version_entry
-                .iter()
-                .filter_map(|s| s.1.contains("-IWBUMS").eq(&false).then(|| s.1.to_owned()))
-                .collect::<Vec<String>>()
-                .get(0)
-                .unwrap_or(&String::new())
-                .to_owned(),
-            version_entry
-                .iter()
-                .filter_map(|s| s.1.contains("-IWBUMS").then(|| s.1.to_owned()))
-                .collect::<Vec<String>>()
-                .get(0)
-                .unwrap_or(&String::new())
-                .to_owned(),
-        );
-
-        let game_version = version_entry
-            .get(&depot_manifest.manifest_id.to_string())
+        for buildid_dir in &fs::read_dir(in_depots_dir.join(depot_id))
             .unwrap()
-            .to_owned();
+            .map(|dir| dir.expect("Failed to get buildid directory"))
+            .collect::<Vec<DirEntry>>()
+        {
+            debug!(
+                "Found build dir at path {}",
+                buildid_dir.path().to_str().unwrap()
+            );
 
-        generate_indexes_manifest(
-            &depot_manifest,
-            &game_version,
-            &out_indexes_dir
-                .join(ENVIRONMENT_SUBDIRS[0])
-                .join(CLIENT_PLATFORM_SUBDIRS[i]),
-        );
+            for depot_file in &fs::read_dir(buildid_dir.path())
+                .unwrap()
+                .filter_map(|entry| {
+                    entry
+                        .as_ref()
+                        .unwrap()
+                        .file_type()
+                        .unwrap()
+                        .is_file()
+                        .then(|| entry.unwrap().path())
+                })
+                .collect::<Vec<PathBuf>>()
+            {
+                debug!("Found depot manifest at path {:?}", depot_file.as_os_str());
+                let depot_manifest = parse_depot_manifest(&depot_file);
 
-        generate_launcher_manifest(
-            &depot_manifest,
-            &game_version,
-            &out_indexes_dir
-                .join(ENVIRONMENT_SUBDIRS[0])
-                .join(CLIENT_PLATFORM_SUBDIRS[i].to_owned())
-                .join(game_version.to_owned() + ".json"),
-            &out_manifests_dir
-                .join(ENVIRONMENT_SUBDIRS[0])
-                .join(CLIENT_PLATFORM_SUBDIRS[i]),
-        );
+                let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
+                // release, snapshot
+                let latest_versions = (
+                    version_entry
+                        .iter()
+                        .filter_map(|s| {
+                            s.1.contains("-unstable").eq(&false).then(|| s.1.to_owned())
+                        })
+                        .collect::<Vec<String>>()
+                        .get(0)
+                        .unwrap_or(&String::new())
+                        .to_owned(),
+                    version_entry
+                        .iter()
+                        .filter_map(|s| s.1.contains("-unstable").then(|| s.1.to_owned()))
+                        .collect::<Vec<String>>()
+                        .get(0)
+                        .unwrap_or(&String::new())
+                        .to_owned(),
+                );
 
-        generate_version_manifest(
-            &depot_manifest,
-            &game_version,
-            &latest_versions,
-            &out_manifests_dir
-                .join(ENVIRONMENT_SUBDIRS[0])
-                .join(CLIENT_PLATFORM_SUBDIRS[i]),
-        );
+                let game_version = version_entry
+                    .get(&depot_manifest.manifest_id.to_string())
+                    .unwrap()
+                    .to_owned();
+
+                generate_indexes_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &out_indexes_dir
+                        .join(ENVIRONMENT_SUBDIRS[0])
+                        .join(CLIENT_PLATFORM_SUBDIRS[i]),
+                );
+
+                generate_launcher_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &out_indexes_dir
+                        .join(ENVIRONMENT_SUBDIRS[0])
+                        .join(CLIENT_PLATFORM_SUBDIRS[i].to_owned())
+                        .join(game_version.to_owned() + ".json"),
+                    &out_manifests_dir
+                        .join(ENVIRONMENT_SUBDIRS[0])
+                        .join(CLIENT_PLATFORM_SUBDIRS[i]),
+                );
+
+                generate_version_manifest(
+                    &depot_manifest,
+                    &game_version,
+                    &latest_versions,
+                    &out_manifests_dir
+                        .join(ENVIRONMENT_SUBDIRS[0])
+                        .join(CLIENT_PLATFORM_SUBDIRS[i]),
+                );
+            }
+        }
 
         debug!(
             "Generating client manifests for depot {} took {}ms",
