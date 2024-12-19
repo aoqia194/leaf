@@ -308,8 +308,12 @@ fn generate_launcher_manifest(
     let out_file = out_platform_dir.join(game_version.to_owned() + ".json");
 
     // If the manifest already exists and don't force overwrite it then do nothing
-    if !is_force() && fs::exists(out_file.to_owned()).is_ok() {
-        debug!("Launcher manifest already exists. Skipping.");
+    if !is_force() && fs::exists(out_file.to_owned()).unwrap_or(false) {
+        debug!(
+            "Launcher manifest already exists with version {} at path {}. Skipping.",
+            game_version.to_owned(),
+            out_file.to_owned().to_str().unwrap()
+        );
         return;
     }
 
