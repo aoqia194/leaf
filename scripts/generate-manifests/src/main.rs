@@ -128,7 +128,7 @@ struct VersionEntry {
 #[derive(Serialize, Deserialize)]
 struct VersionLatest {
     release: String,
-    snapshot: String,
+    unstable: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -369,7 +369,7 @@ fn generate_version_manifest(
     info!("Generating version manifest.");
 
     let latest_version = latest_versions.0.to_owned();
-    let latest_snapshot = latest_versions.1.to_owned();
+    let latest_unstable = latest_versions.1.to_owned();
 
     let out_file = out_platform_dir.join(VERSION_MANIFEST_JSON);
 
@@ -427,8 +427,8 @@ fn generate_version_manifest(
             version_manifest.latest.release = latest_version;
         }
 
-        if version_manifest.latest.snapshot != latest_snapshot {
-            version_manifest.latest.snapshot = latest_snapshot;
+        if version_manifest.latest.unstable != latest_unstable {
+            version_manifest.latest.unstable = latest_unstable;
         }
 
         if game_version > &version_manifest.versions.first().unwrap().id {
@@ -470,7 +470,7 @@ fn generate_version_manifest(
         let manifest = VersionManifest {
             latest: VersionLatest {
                 release: latest_version,
-                snapshot: latest_snapshot,
+                unstable: latest_unstable,
             },
             versions,
         };
@@ -633,7 +633,7 @@ fn generate_server_manifests(
                 let depot_manifest = parse_depot_manifest(&depot_file);
 
                 let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
-                // release, snapshot
+                // release, unstable
                 let latest_versions = (
                     version_entry
                         .iter()
@@ -741,7 +741,7 @@ fn generate_client_manifests(
                 let depot_manifest = parse_depot_manifest(&depot_file);
 
                 let version_entry = version_table.versions.get(depot_id.to_owned()).unwrap();
-                // release, snapshot
+                // release, unstable
                 let latest_versions = (
                     version_entry
                         .iter()
