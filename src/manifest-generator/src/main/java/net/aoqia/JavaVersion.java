@@ -1,4 +1,6 @@
 package net.aoqia;
 
 public class JavaVersion {
+    public String component;
+    public byte majorVersion;
 }
