@@ -3,11 +3,13 @@ package net.aoqia;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class LauncherManifest {
     public Args arguments;
     public AssetIndex assetIndex;
     public JavaVersion javaVersion;
-    public List<Library> libraries = List.of();
+    public List<Library> libraries;
     public String mainClass;
     public String releaseTime;
     public String time;
@@ -15,8 +17,8 @@ public class LauncherManifest {
 
     public static class Library {
         public String name;
-        // Object is Rule here, but it fills with null all over, so I am too lazy to fix it.
-        public List<Object> rules = List.of();
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public List<Rule> rules;
 
         public static class Artifact {
             public String path;
@@ -32,7 +34,7 @@ public class LauncherManifest {
         public List<Object> jvm = List.of();
 
         public static class RuleArg {
-            public List<Rule> rules = List.of();
+            public List<Rule> rules;
             // Object can be List<String> or String.
             public Object value;
         }
@@ -40,11 +42,14 @@ public class LauncherManifest {
 
     public static class Rule {
         public String action;
-        public List<HashMap<String, Boolean>> features = List.of();
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public List<HashMap<String, Boolean>> features;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public RuleArgOs os;
 
         public static class RuleArgOs {
             // Platform architecture.
+            @JsonInclude(JsonInclude.Include.NON_NULL)
             public String arch;
             // Platform short name (windows, osx)
             public String name;
