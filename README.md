@@ -1,8 +1,9 @@
 # Leaf
 
-Mainly a place to store data like a Maven repository since I don't have one, nor do I know how to set up one.
-Also hosts scripts to automatically generate certain manifests based on Steam depot data.
+A place to store all of the things I need for Java modding to be publicly available.
+This repository so far contains creation and storage of version manifests which are parsed from Steam manifest data, and also file hash tables so you can check if an install is valid.
 
-# Scripts
+# Generate Them Yourself!
 
-To use the scripts, extract the manifests via [DepotDownloader](https://github.com/SteamRE/DepotDownloader) and pass the absolute path to the manifest as an arg.
+To generate the manifests yourself like I do, download the Steam manifests via [DepotDownloader](https://github.com/SteamRE/DepotDownloader) and pass the absolute path to the depots folder as an arg.
+Example args for the program look like this: `-Dleaf.rootPath=C:\github\leaf -Dleaf.depotsPath=C:\Users\aoqia\depots`.
