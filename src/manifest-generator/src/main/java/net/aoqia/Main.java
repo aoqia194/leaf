@@ -60,25 +60,10 @@ public class Main {
     public static void main(String[] args) {
         depotsPath = Path.of(System.getProperty("leaf.depotsPath"));
         outputPath = Path.of(System.getProperty("leaf.rootPath"));
-        force = Boolean.parseBoolean(System.getProperty("leaf.force"));
+        force = Boolean.parseBoolean(System.getProperty("leaf.force", "false"));
 
         if (!depotsPath.toFile().exists() || !outputPath.toFile().exists()) {
             throw new RuntimeException("The depots path or the output path doesn't exist");
-        }
-
-        Path jarPath;
-        try {
-            jarPath = new File(Main.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI()).toPath().getParent();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (jarPath == null) {
-            throw new RuntimeException("Failed to find the path of the running jar!");
         }
 
         try {
