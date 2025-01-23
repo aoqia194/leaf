@@ -58,6 +58,15 @@
                 "4853909597474362594",
                 "597900166880863308"
             ]
+        },
+        "_default": {
+            "arguments": {
+                "game": [],
+                "jvm": [
+                    "-Djava.awt.headless=true",
+                    "-Djava.library.path=./win64/;./"
+                ]
+            }
         }
     }
 }

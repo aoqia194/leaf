@@ -2,7 +2,6 @@ package net.aoqia;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -355,14 +354,18 @@ public class Main {
         }
 
         VersionTable.Version version = versionTable.versions.get(gameVersion.toString());
+        VersionTable.Version defaultVersion = versionTable.versions.get("_default");
 
         LauncherManifest manifest = new LauncherManifest();
         manifest.assetIndex = assetIndex;
         manifest.javaVersion = javaVersion;
 
-        LauncherManifest.Args arguments = new LauncherManifest.Args();
-        arguments.game = List.of();
-        arguments.jvm = List.of();
+        LauncherManifest.Args arguments;
+        if (version.arguments != null) {
+            arguments = version.arguments;
+        } else {
+            arguments = defaultVersion.arguments;
+        }
 
         manifest.arguments = arguments;
         manifest.libraries = (version.libraries != null) ? version.libraries : List.of();
