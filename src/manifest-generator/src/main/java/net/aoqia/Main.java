@@ -109,14 +109,15 @@ public class Main {
 
         try {
             versionTable = MAPPER.readValue(outputPath.resolve(VERSION_TABLE_JSON).toFile(), VersionTable.class);
-            generateManifests();
+            generateClientManifests();
+            generateServerManifests();
         } catch (IOException e) {
             LOGGER.error("Failed to parse version table and generate manifests.", e);
             throw new RuntimeException(e);
         }
     }
 
-    public static void generateManifests() throws IOException {
+    public static void generateClientManifests() throws IOException {
         for (int i = 0; i < CLIENT_DEPOT_SUBDIRS.length; i++) {
             String depotId = CLIENT_DEPOT_SUBDIRS[i];
 
@@ -162,6 +163,56 @@ public class Main {
                     manifestsPath.resolve(ENV_SUBDIRS[0]).resolve(CLIENT_PLATFORM_SUBDIRS[i]));
                 generateVersionManifest(manifest,
                     manifestsPath.resolve(ENV_SUBDIRS[0]).resolve(CLIENT_PLATFORM_SUBDIRS[i]));
+            }
+        }
+    }
+
+    public static void generateServerManifests() throws IOException {
+        for (int i = 0; i < SERVER_DEPOT_SUBDIRS.length; i++) {
+            String depotId = SERVER_DEPOT_SUBDIRS[i];
+
+            // Contains a list of manifests that only contain the latest manifest for each version.
+            HashMap<String, DepotManifest> uniqueManifests = new HashMap<>();
+
+            LOGGER.info("Fetching latest manifests...");
+            try (Stream<Path> buildStream = Files.walk(depotsPath.resolve(depotId))
+                .filter(Files::isRegularFile)
+                .filter(path -> !path.toFile().getParentFile().getName().startsWith("."))) {
+                for (Path depotFile : buildStream.toList()) {
+                    LOGGER.debug("Found depot manifest at path {}", depotFile);
+
+                    DepotManifest manifest = parseDepotManifest(depotFile);
+                    String version = getManifestGameVersion(manifest).toString();
+                    if (!uniqueManifests.containsKey(version) || OffsetDateTime.parse(manifest.manifestDate)
+                        .isAfter(OffsetDateTime.parse(uniqueManifests.get(version).manifestDate))) {
+                        LOGGER.debug("Manifest was unique or contained a later build of the version.");
+                        uniqueManifests.put(version, manifest);
+                    }
+                }
+            }
+
+            LOGGER.info("Generating server manifests for depot {}", depotId);
+            for (String ver : uniqueManifests.keySet()) {
+                DepotManifest manifest = uniqueManifests.get(ver);
+                Semver version = Semver.parse(ver);
+
+                LOGGER.debug("Generating (depotId={},manifestId={},version={})",
+                    depotId,
+                    manifest.manifestId,
+                    version);
+
+                latestVersion = getLatestVersion(manifest);
+                gameVersion = getManifestGameVersion(manifest);
+
+                generateIndexesManifest(manifest,
+                    indexesPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
+                generateLauncherManifest(manifest, indexesPath
+                        .resolve(ENV_SUBDIRS[1])
+                        .resolve(SERVER_PLATFORM_SUBDIRS[i]).resolve(gameVersion + ".json")
+                        .toFile(),
+                    manifestsPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
+                generateVersionManifest(manifest,
+                    manifestsPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
             }
         }
     }
