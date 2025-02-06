@@ -2,7 +2,7 @@ plugins {
     id "java"
 }
 
-group = "net.aoqia"
+group = "dev.aoqia"
 version = "1.0-SNAPSHOT"
 
 repositories {
