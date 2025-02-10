@@ -1,4 +1,4 @@
-package net.aoqia;
+package dev.aoqia;
 
 public enum PlatformDepot {
     MAC_CLIENT(108602),

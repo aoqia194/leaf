@@ -1,4 +1,4 @@
-package net.aoqia;
+package dev.aoqia;
 
 import java.util.List;
 

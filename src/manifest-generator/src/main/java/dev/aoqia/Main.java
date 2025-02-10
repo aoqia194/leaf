@@ -1,4 +1,4 @@
-package net.aoqia;
+package dev.aoqia;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class Main {
     public static final String[] SERVER_PLATFORM_SUBDIRS = { "common", "mac", "linux", "win" };
     public static final String[] SERVER_DEPOT_SUBDIRS = { "380871", "380872", "380873", "380874" };
     public static final String VERSION_MANIFEST_JSON = "version_manifest.json";
-    public static final String VERSION_TABLE_JSON = "version_table.json";
+    public static final String GAME_VERSIONS_JSON = "game_versions.json";
     public static final Pattern DEPOT_HEADER_REGEX = Pattern.compile(
         "^Content Manifest for Depot (\\d+)$|^Manifest ID \\/ date\\s*\\:\\s*(\\d+)\\s*\\/\\s*([^\\n]+)$|^Total " +
         "number of files\\s*\\:\\s*(\\d+)$|^Total number of chunks\\s*\\:\\s*(\\d+)$|^Total bytes on disk\\s*\\:\\s*" +
@@ -108,7 +108,7 @@ public class Main {
         LOGGER.debug("force: {}", force);
 
         try {
-            versionTable = MAPPER.readValue(outputPath.resolve(VERSION_TABLE_JSON).toFile(), VersionTable.class);
+            versionTable = MAPPER.readValue(outputPath.resolve(GAME_VERSIONS_JSON).toFile(), VersionTable.class);
             generateClientManifests();
             generateServerManifests();
         } catch (IOException e) {
@@ -405,17 +405,26 @@ public class Main {
         }
 
         VersionTable.Version version = versionTable.versions.get(gameVersion.toString());
-        VersionTable.Version defaultVersion = versionTable.versions.get("_default");
 
         LauncherManifest manifest = new LauncherManifest();
         manifest.assetIndex = assetIndex;
         manifest.javaVersion = javaVersion;
 
-        LauncherManifest.Args arguments;
+        // If no arguments found, check inherited version's args.
+        // If no inherited version, just use the first one found.
+        LauncherManifest.Args arguments = null;
         if (version.arguments != null) {
             arguments = version.arguments;
+        } else if (!version.inherits.isEmpty()) {
+            arguments = versionTable.versions.get(version.inherits).arguments;
         } else {
-            arguments = defaultVersion.arguments;
+            for (final var entry : versionTable.versions.entrySet()) {
+                final var ver = entry.getValue();
+                if (ver.arguments != null) {
+                    arguments = ver.arguments;
+                    break;
+                }
+            }
         }
 
         manifest.arguments = arguments;

@@ -1,4 +1,4 @@
-package net.aoqia;
+package dev.aoqia;
 
 public class JavaVersion {
     public String component;
