@@ -8,12 +8,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class LauncherManifest {
     public Args arguments;
     public AssetIndex assetIndex;
-    public JavaVersion javaVersion;
+    public String javaVersion;
     public List<Library> libraries;
     public String mainClass;
     public String releaseTime;
     public String time;
-    public String version;
+    public String id;
 
     public static class Library {
         public String name;
