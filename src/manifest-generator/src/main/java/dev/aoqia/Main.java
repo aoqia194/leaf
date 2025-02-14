@@ -11,7 +11,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -25,12 +28,15 @@ import org.slf4j.LoggerFactory;
 public class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("ManifestGenerator");
     public static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final DateTimeFormatter DEPOT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    public static final DateTimeFormatter DEPOT_DATE_FORMATTER = DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneOffset.UTC);
-    public static final DateTimeFormatter NOW_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
+    public static final DateTimeFormatter NOW_DATE_FORMATTER = DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ssZ")
         .withZone(ZoneOffset.UTC);
     public static final HexFormat HEXFORMAT = HexFormat.of();
-    public static final String REPOSITORY_URL = "https://github.com/aoqia194/leaf/raw/refs/heads/main";
+    public static final String REPOSITORY_URL = "https://github.com/aoqia194/leaf/raw/refs/heads" +
+                                                "/main";
     public static final String INDEXES_URL = REPOSITORY_URL + "/indexes";
     public static final String MANIFESTS_URL = REPOSITORY_URL + "/manifests";
     public static final String[] ENV_SUBDIRS = { "client", "server" };
@@ -41,20 +47,20 @@ public class Main {
     public static final String VERSION_MANIFEST_JSON = "version_manifest.json";
     public static final String GAME_VERSIONS_JSON = "game_versions.json";
     public static final Pattern DEPOT_HEADER_REGEX = Pattern.compile(
-        "^Content Manifest for Depot (\\d+)$|^Manifest ID \\/ date\\s*\\:\\s*(\\d+)\\s*\\/\\s*([^\\n]+)$|^Total " +
-        "number of files\\s*\\:\\s*(\\d+)$|^Total number of chunks\\s*\\:\\s*(\\d+)$|^Total bytes on disk\\s*\\:\\s*" +
+        "^Content Manifest for Depot (\\d+)$|^Manifest ID \\/ date\\s*\\:\\s*(\\d+)\\s*\\/\\s*" +
+        "([^\\n]+)$|^Total " +
+        "number of files\\s*\\:\\s*(\\d+)$|^Total number of chunks\\s*\\:\\s*(\\d+)$|^Total bytes" +
+        " on disk\\s*\\:\\s*" +
         "(\\d+)$|^Total bytes compressed\\s*\\:\\s*(\\d+)$");
     public static final Pattern DEPOT_ENTRY_REGEX = Pattern.compile(
         "(?:^ *(\\d+)\\s*(\\d+)\\s*(\\w+)\\s*(\\d+)\\s*([^\\n]*))");
     public static MessageDigest SHA1_DIGEST;
-    private static VersionManifest.LatestVersion latestVersion = new VersionManifest.LatestVersion();
     private static Path outputPath;
     private static Path depotsPath;
     private static boolean force;
     private static Path manifestsPath;
     private static Path indexesPath;
     private static VersionTable versionTable;
-    private static Semver gameVersion;
 
     public static void main(String[] args) {
         depotsPath = Path.of(System.getProperty("leaf.depotsPath"));
@@ -108,7 +114,8 @@ public class Main {
         LOGGER.debug("force: {}", force);
 
         try {
-            versionTable = MAPPER.readValue(outputPath.resolve(GAME_VERSIONS_JSON).toFile(), VersionTable.class);
+            versionTable = MAPPER.readValue(outputPath.resolve(GAME_VERSIONS_JSON).toFile(),
+                VersionTable.class);
             generateClientManifests();
             generateServerManifests();
         } catch (IOException e) {
@@ -121,7 +128,13 @@ public class Main {
         for (int i = 0; i < CLIENT_DEPOT_SUBDIRS.length; i++) {
             String depotId = CLIENT_DEPOT_SUBDIRS[i];
 
-            // Contains a list of manifests that only contain the latest manifest for each version.
+            final Path manifestsDir = manifestsPath.resolve(ENV_SUBDIRS[0])
+                .resolve(CLIENT_PLATFORM_SUBDIRS[i]);
+
+            /*
+             * Contains a list of manifests that only contain the latest manifest for each version.
+             * For example, if is a game version with 2 manifests with the same depot id/
+             */
             HashMap<String, DepotManifest> uniqueManifests = new HashMap<>();
 
             LOGGER.info("Fetching latest manifests...");
@@ -133,9 +146,12 @@ public class Main {
 
                     DepotManifest manifest = parseDepotManifest(depotFile);
                     String version = getManifestGameVersion(manifest).toString();
-                    if (!uniqueManifests.containsKey(version) || OffsetDateTime.parse(manifest.manifestDate)
-                        .isAfter(OffsetDateTime.parse(uniqueManifests.get(version).manifestDate))) {
-                        LOGGER.debug("Manifest was unique or contained a later build of the version.");
+                    if (!uniqueManifests.containsKey(version) ||
+                        OffsetDateTime.parse(manifest.manifestDate)
+                            .isAfter(
+                                OffsetDateTime.parse(uniqueManifests.get(version).manifestDate))) {
+                        LOGGER.debug(
+                            "Manifest was unique or contained a later build of the version.");
                         uniqueManifests.put(version, manifest);
                     }
                 }
@@ -151,18 +167,14 @@ public class Main {
                     manifest.manifestId,
                     version);
 
-                latestVersion = getLatestVersion(manifest);
-                gameVersion = getManifestGameVersion(manifest);
+                final File indexesFile = indexesPath.resolve(ENV_SUBDIRS[0])
+                    .resolve(CLIENT_PLATFORM_SUBDIRS[i])
+                    .resolve(version + ".json")
+                    .toFile();
 
-                generateIndexesManifest(manifest,
-                    indexesPath.resolve(ENV_SUBDIRS[0]).resolve(CLIENT_PLATFORM_SUBDIRS[i]));
-                generateLauncherManifest(manifest, indexesPath
-                        .resolve(ENV_SUBDIRS[0])
-                        .resolve(CLIENT_PLATFORM_SUBDIRS[i]).resolve(gameVersion + ".json")
-                        .toFile(),
-                    manifestsPath.resolve(ENV_SUBDIRS[0]).resolve(CLIENT_PLATFORM_SUBDIRS[i]));
-                generateVersionManifest(manifest,
-                    manifestsPath.resolve(ENV_SUBDIRS[0]).resolve(CLIENT_PLATFORM_SUBDIRS[i]));
+                writeIndexesManifest(manifest, indexesFile);
+                writeLauncherManifest(manifest, version, indexesFile, manifestsDir);
+                writeVersionManifest(manifest, version, manifestsDir);
             }
         }
     }
@@ -170,6 +182,9 @@ public class Main {
     public static void generateServerManifests() throws IOException {
         for (int i = 0; i < SERVER_DEPOT_SUBDIRS.length; i++) {
             String depotId = SERVER_DEPOT_SUBDIRS[i];
+
+            final Path manifestsDir = manifestsPath.resolve(ENV_SUBDIRS[1])
+                .resolve(SERVER_PLATFORM_SUBDIRS[i]);
 
             // Contains a list of manifests that only contain the latest manifest for each version.
             HashMap<String, DepotManifest> uniqueManifests = new HashMap<>();
@@ -183,9 +198,12 @@ public class Main {
 
                     DepotManifest manifest = parseDepotManifest(depotFile);
                     String version = getManifestGameVersion(manifest).toString();
-                    if (!uniqueManifests.containsKey(version) || OffsetDateTime.parse(manifest.manifestDate)
-                        .isAfter(OffsetDateTime.parse(uniqueManifests.get(version).manifestDate))) {
-                        LOGGER.debug("Manifest was unique or contained a later build of the version.");
+                    if (!uniqueManifests.containsKey(version) ||
+                        OffsetDateTime.parse(manifest.manifestDate)
+                            .isAfter(
+                                OffsetDateTime.parse(uniqueManifests.get(version).manifestDate))) {
+                        LOGGER.debug(
+                            "Manifest was unique or contained a later build of the version.");
                         uniqueManifests.put(version, manifest);
                     }
                 }
@@ -201,18 +219,14 @@ public class Main {
                     manifest.manifestId,
                     version);
 
-                latestVersion = getLatestVersion(manifest);
-                gameVersion = getManifestGameVersion(manifest);
+                final File indexesFile = indexesPath.resolve(ENV_SUBDIRS[1])
+                    .resolve(SERVER_PLATFORM_SUBDIRS[i])
+                    .resolve(version + ".json")
+                    .toFile();
 
-                generateIndexesManifest(manifest,
-                    indexesPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
-                generateLauncherManifest(manifest, indexesPath
-                        .resolve(ENV_SUBDIRS[1])
-                        .resolve(SERVER_PLATFORM_SUBDIRS[i]).resolve(gameVersion + ".json")
-                        .toFile(),
-                    manifestsPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
-                generateVersionManifest(manifest,
-                    manifestsPath.resolve(ENV_SUBDIRS[1]).resolve(SERVER_PLATFORM_SUBDIRS[i]));
+                writeIndexesManifest(manifest, indexesFile);
+                writeLauncherManifest(manifest, version, indexesFile, manifestsDir);
+                writeVersionManifest(manifest, version, manifestsDir);
             }
         }
     }
@@ -230,7 +244,8 @@ public class Main {
         String manifestDate;
         try {
             manifestDate = OffsetDateTime.parse(matcher.find()
-                ? matcher.group(3) : "", DEPOT_DATE_FORMATTER).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    ? matcher.group(3) : "", DEPOT_DATE_FORMATTER)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } catch (DateTimeParseException e) {
             throw new RuntimeException("Failed to parse manifest date and time!", e);
         }
@@ -240,7 +255,8 @@ public class Main {
         String bytesDisk = matcher.reset(lines.next()).find() ? matcher.group(6) : "";
         String bytesCompressed = matcher.reset(lines.next()).find() ? matcher.group(7) : "";
 
-        if (depotId.isEmpty() || manifestId.isEmpty() || numFiles.isEmpty() || numChunks.isEmpty() ||
+        if (depotId.isEmpty() || manifestId.isEmpty() || numFiles.isEmpty() ||
+            numChunks.isEmpty() ||
             bytesDisk.isEmpty() || bytesCompressed.isEmpty()) {
             LOGGER.error("Failed to parse depot manifest. This is bad!");
             throw new RuntimeException("Failed to parse depot manifest");
@@ -292,6 +308,13 @@ public class Main {
         return manifest;
     }
 
+    /**
+     * Gets the game version from a manifest by parsing the version table and finding which version
+     * it belongs to.
+     *
+     * @param manifest The depot manifest to check against.
+     * @return The Semver version string.
+     */
     private static Semver getManifestGameVersion(DepotManifest manifest) {
         Semver gameVersion = null;
 
@@ -305,25 +328,9 @@ public class Main {
         return gameVersion;
     }
 
-    private static VersionManifest.LatestVersion getLatestVersion(DepotManifest manifest) {
-        var latestVersion = new VersionManifest.LatestVersion();
-
-        for (String version : versionTable.versions.keySet()) {
-            if (!version.contains("-unstable") && latestVersion.release == null) {
-                latestVersion.release = version;
-            } else if (version.contains("-unstable") && latestVersion.unstable == null) {
-                latestVersion.unstable = version;
-            }
-        }
-
-        return latestVersion;
-    }
-
-    public static void generateIndexesManifest(DepotManifest depot, Path out) throws IOException {
+    public static void writeIndexesManifest(DepotManifest depot, File out) throws IOException {
         LOGGER.info("Generating indexes manifest.");
-        File f = out.resolve(gameVersion + ".json").toFile();
-
-        if (!force && f.exists()) {
+        if (!force && out.exists()) {
             LOGGER.info("Index manifest already exists.");
             return;
         }
@@ -344,11 +351,11 @@ public class Main {
         AssetIndexManifest manifest = new AssetIndexManifest();
         manifest.objects = objects;
 
-        MAPPER.writeValue(f, manifest);
+        MAPPER.writeValue(out, manifest);
     }
 
-    private static void generateLauncherManifest(DepotManifest depot, File assetIndexFile, Path out) throws
-        IOException {
+    private static void writeLauncherManifest(DepotManifest depot, Semver gameVersion,
+        File assetIndexFile, Path out) throws IOException {
         LOGGER.info("Generating launcher manifest.");
 
         assert assetIndexFile.exists();
@@ -396,19 +403,10 @@ public class Main {
         assetIndex.size = bytes.length;
         assetIndex.url = url;
 
-        JavaVersion javaVersion = new JavaVersion();
-        javaVersion.component = "java-runtime-delta";
-        javaVersion.majorVersion = 0;
-
-        if (gameVersion.isGreaterThanOrEqualTo("41.78.16")) {
-            javaVersion.majorVersion = 17;
-        }
-
         VersionTable.Version version = versionTable.versions.get(gameVersion.toString());
 
         LauncherManifest manifest = new LauncherManifest();
         manifest.assetIndex = assetIndex;
-        manifest.javaVersion = javaVersion;
 
         // If no arguments found, check inherited version's args.
         // If no inherited version, just use the first one found.
@@ -429,15 +427,24 @@ public class Main {
 
         manifest.arguments = arguments;
         manifest.libraries = (version.libraries != null) ? version.libraries : List.of();
-        manifest.mainClass = env.equals("client") ? "zombie.gameStates.MainScreenState" : "zombie.network.Server";
+        manifest.mainClass =
+            env.equals("client") ? "zombie.gameStates.MainScreenState" : "zombie.network.Server";
         manifest.releaseTime = depotManifestDate.toString();
-        manifest.time = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS).toString();
-        manifest.version = gameVersion.toString();
+        manifest.time = OffsetDateTime.now(ZoneOffset.UTC)
+            .truncatedTo(ChronoUnit.SECONDS)
+            .toString();
+        manifest.id = gameVersion.toString();
+
+        manifest.javaVersion = "17";
+        if (gameVersion.isGreaterThanOrEqualTo("41.78.16")) {
+            manifest.javaVersion = "17";
+        }
 
         MAPPER.writeValue(f, manifest);
     }
 
-    public static void generateVersionManifest(DepotManifest depot, Path out) throws IOException {
+    public static void writeVersionManifest(DepotManifest depot, Semver gameVersion,
+        Path out) throws IOException {
         LOGGER.info("Generating version manifest.");
 
         File launcherManifest = out.resolve(gameVersion + ".json").toFile();
@@ -456,7 +463,9 @@ public class Main {
         version.id = gameVersion.toString();
         version.url = "%s/%s/%s/%s.json".formatted(MANIFESTS_URL, env, os, gameVersion.toString());
         version.sha1 = sha1;
-        version.time = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS).toString();
+        version.time = OffsetDateTime.now(ZoneOffset.UTC)
+            .truncatedTo(ChronoUnit.SECONDS)
+            .toString();
         version.releaseTime = depot.manifestDate;
 
         // Check for invalid data if the file exists and delete if found.
@@ -464,26 +473,24 @@ public class Main {
             try {
                 MAPPER.readValue(versionManifest, VersionManifest.class);
             } catch (DatabindException e) {
-                LOGGER.warn("Existing version manifest could not be parsed. Deleting to overwrite.");
+                LOGGER.warn(
+                    "Existing version manifest could not be parsed. Deleting to overwrite.");
                 if (!versionManifest.delete()) {
                     throw new RuntimeException("Failed to delete existing version manifest.");
                 }
             }
-        }
 
-        // Add version if needed (if file already exists) or create a new file.
-        if (versionManifest.exists()) {
+            // Properly edit existing manifest below. The else clause is creating a new one.
+
             VersionManifest manifest = MAPPER.readValue(versionManifest, VersionManifest.class);
 
-            String latestRelease = latestVersion.release;
-            String latestUnstable = latestVersion.unstable;
-
-            if (!Objects.equals(manifest.latest.release, latestRelease)) {
-                manifest.latest.release = latestRelease;
-            }
-
-            if (!Objects.equals(manifest.latest.unstable, latestUnstable)) {
-                manifest.latest.unstable = latestUnstable;
+            final boolean isUnstable = gameVersion.getVersion().contains("unstable");
+            if (isUnstable && (manifest.latest.unstable == null ||
+                               gameVersion.isGreaterThan(manifest.latest.unstable))) {
+                manifest.latest.unstable = gameVersion.getVersion();
+            } else if (!isUnstable && (manifest.latest.release == null ||
+                                       gameVersion.isGreaterThan(manifest.latest.release))) {
+                manifest.latest.release = gameVersion.getVersion();
             }
 
             if (gameVersion.isGreaterThan(manifest.versions.getFirst().id)) {
@@ -509,8 +516,10 @@ public class Main {
                 if (idx == -1) {
                     for (int i = 0; i < manifest.versions.size(); ++i) {
                         if (i == manifest.versions.size() - 1) {
-                            LOGGER.warn("Reached end of list while trying to figure out where to put version." +
-                                        "Forcing add at the end of list");
+                            LOGGER.warn(
+                                "Reached end of list while trying to figure out where to put " +
+                                "version." +
+                                "Forcing add at the end of list");
                             manifest.versions.addLast(version);
                             update = true;
                             break;
@@ -527,9 +536,7 @@ public class Main {
                             break;
                         }
                     }
-                }
-
-                if (idx != -1) {
+                } else {
                     // Update older versions with newer manifest.
                     var ver = manifest.versions.get(idx);
                     OffsetDateTime versionDate = OffsetDateTime.parse(version.releaseTime);
@@ -537,7 +544,8 @@ public class Main {
 
                     // The version can be the same but have a newer manifest (thanks TIS).
                     if (ver.id.equals(gameVersion.toString()) &&
-                        (versionEntryDate.isBefore(versionDate) || versionEntryDate.isEqual(versionDate))) {
+                        (versionEntryDate.isBefore(versionDate) ||
+                         versionEntryDate.isEqual(versionDate))) {
                         LOGGER.info("Version found in manifest is the same but older manifest.");
 
                         ver.id = version.id;
@@ -551,7 +559,8 @@ public class Main {
                 }
 
                 if (!update) {
-                    LOGGER.info("Version manifest already exists and contains no versions to update.");
+                    LOGGER.info(
+                        "Version manifest already exists and contains no versions to update.");
                     return;
                 }
             }
@@ -562,7 +571,7 @@ public class Main {
             List<VersionManifest.Version> versions = List.of(version);
 
             VersionManifest manifest = new VersionManifest();
-            manifest.latest = latestVersion;
+            manifest.latest = new VersionManifest.LatestVersion(gameVersion.getVersion());
             manifest.versions = versions;
 
             MAPPER.writeValue(versionManifest, manifest);
