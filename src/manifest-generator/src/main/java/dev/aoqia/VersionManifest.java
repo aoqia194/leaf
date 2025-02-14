@@ -9,6 +9,21 @@ public class VersionManifest {
     public static class LatestVersion {
         public String release;
         public String unstable;
+
+        public LatestVersion() {}
+
+        /**
+         * Constructs a LatestVersion object. Purposefully leaves one of the fields null.
+         *
+         * @param release The version to use.
+         */
+        public LatestVersion(String release) {
+            if (release.contains("unstable")) {
+                this.unstable = release;
+            } else {
+                this.release = release;
+            }
+        }
     }
 
     public static class Version {
