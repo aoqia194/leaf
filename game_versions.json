@@ -1,5 +1,13 @@
 {
     "versions": {
+        "42.4.0-unstable.27132": {
+            "inherits": "41.78.16",
+            "manifests": [
+                "4424567360719497908",
+                "173917207231866840",
+                "5647352833934241350"
+            ]
+        },
         "42.3.1-unstable.26566": {
             "inherits": "41.78.16",
             "manifests": [
@@ -80,7 +88,39 @@
                 "game": [],
                 "jvm": [
                     "-Djava.awt.headless=true",
-                    "-Djava.library.path=./win64/;./"
+                    {
+                        "rules": [
+                            {
+                                "action": "allow",
+                                "os": {
+                                    "name": "windows"
+                                }
+                            }
+                        ],
+                        "value": "-Djava.library.path=./win64/;./"
+                    },
+                    {
+                        "rules": [
+                            {
+                                "action": "allow",
+                                "os": {
+                                    "name": "linux"
+                                }
+                            }
+                        ],
+                        "value": "-Djava.library.path=./linux64/;./"
+                    },
+                    {
+                        "rules": [
+                            {
+                                "action": "allow",
+                                "os": {
+                                    "name": "linux"
+                                }
+                            }
+                        ],
+                        "value": "-Djava.security.egd=file:/dev/./urandom"
+                    }
                 ]
             },
             "manifests": [
