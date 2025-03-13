@@ -102,10 +102,10 @@
                                 "action": "allow",
                                 "os": {
                                     "name": "windows"
-                                }
+                                },
+                                "value": "-Djava.library.path=./win64/;./"
                             }
-                        ],
-                        "value": "-Djava.library.path=./win64/;./"
+                        ]
                     },
                     {
                         "rules": [
@@ -113,10 +113,10 @@
                                 "action": "allow",
                                 "os": {
                                     "name": "linux"
-                                }
+                                },
+                                "value": "-Djava.library.path=./linux64/;./"
                             }
-                        ],
-                        "value": "-Djava.library.path=./linux64/;./"
+                        ]
                     },
                     {
                         "rules": [
@@ -124,10 +124,10 @@
                                 "action": "allow",
                                 "os": {
                                     "name": "linux"
-                                }
+                                },
+                                "value": "-Djava.security.egd=file:/dev/./urandom"
                             }
-                        ],
-                        "value": "-Djava.security.egd=file:/dev/./urandom"
+                        ]
                     }
                 ]
             },
