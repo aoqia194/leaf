@@ -2,18 +2,15 @@ plugins {
     id "java"
 }
 
-group = "dev.aoqia.leaf"
-version = "1.0.0"
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation "commons-io:commons-io:${commonsio}"
     implementation "org.semver4j:semver4j:${semver4j}"
 
     implementation "org.slf4j:slf4j-api:${slf4j2_api}"
-
     implementation platform("org.apache.logging.log4j:log4j-bom:${log4j_bom}")
     implementation "org.apache.logging.log4j:log4j-core:${log4j_core}"
     implementation "org.apache.logging.log4j:log4j-api:${log4j_api}"

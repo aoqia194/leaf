@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FilenameUtils;
 import org.semver4j.Semver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,7 @@ public class Main {
                     .resolve(version + ".json")
                     .toFile();
 
-                writeIndexesManifest(manifest, indexesFile);
+                writeIndexesManifest(manifest, indexesFile, CLIENT_PLATFORM_SUBDIRS[i]);
                 writeLauncherManifest(manifest, version, indexesFile, manifestsDir);
                 writeVersionManifest(manifest, version, manifestsDir);
             }
@@ -224,7 +225,7 @@ public class Main {
                     .resolve(version + ".json")
                     .toFile();
 
-                writeIndexesManifest(manifest, indexesFile);
+                writeIndexesManifest(manifest, indexesFile, SERVER_PLATFORM_SUBDIRS[i]);
                 writeLauncherManifest(manifest, version, indexesFile, manifestsDir);
                 writeVersionManifest(manifest, version, manifestsDir);
             }
@@ -328,7 +329,8 @@ public class Main {
         return gameVersion;
     }
 
-    public static void writeIndexesManifest(DepotManifest depot, File out) throws IOException {
+    public static void writeIndexesManifest(DepotManifest depot, File out, String platform) throws
+        IOException {
         LOGGER.info("Generating indexes manifest.");
         if (!force && out.exists()) {
             LOGGER.info("Index manifest already exists.");
@@ -338,8 +340,10 @@ public class Main {
         // Rebuild entries into index objects
         HashMap<String, AssetIndexManifest.AssetIndex> objects = new HashMap<>();
         for (int i = 0; i < depot.entries.size(); i++) {
-            String key = depot.entries.keySet().toArray()[i].toString();
-            DepotManifest.Entry value = depot.entries.get(key);
+            String p = depot.entries.keySet().toArray()[i].toString();
+            String key = platform.equals("win") ? FilenameUtils.separatorsToWindows(p)
+                : FilenameUtils.separatorsToUnix(p);
+            DepotManifest.Entry value = depot.entries.get(p);
 
             AssetIndexManifest.AssetIndex manifest = new AssetIndexManifest.AssetIndex();
             manifest.hash = value.sha1;
