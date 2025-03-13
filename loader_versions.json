@@ -2,7 +2,7 @@
     "versions": {
         "0.1.0": {
             "config": {
-                "mainClass": "dev/aoqia/loader/impl/launch/knot/KnotClient"
+                "mainClass": "dev/aoqia/leaf/loader/impl/launch/knot/KnotClient"
             },
             "libraries": [
                 {
@@ -30,7 +30,7 @@
                     "url": "https://maven.fabricmc.net/"
                 },
                 {
-                    "name": "dev.aoqia:leaf-loader:0.1.0",
+                    "name": "dev.aoqia.leaf:loader:0.1.0",
                     "url": "https://repo.maven.apache.org/maven2/"
                 }
             ]
