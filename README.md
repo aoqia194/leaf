@@ -7,3 +7,7 @@ This repository so far contains creation and storage of version manifests which 
 
 To generate the manifests yourself like I do, download the Steam manifests via [DepotDownloader](https://github.com/SteamRE/DepotDownloader) and pass the absolute path to the depots folder as an arg.
 Example args for the program look like this: `-Dleaf.rootPath=C:\github\leaf -Dleaf.depotsPath=C:\Users\aoqia\depots`.
+
+# Contributing
+
+If you want to contribute in any way to the function of the leaf toolchain as a whole, you might want to take a look at the issues on the respective repositories, or use the project board I've set up [here](https://github.com/users/aoqia194/projects/6/views/1),
