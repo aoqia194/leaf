@@ -1,4 +1,4 @@
-name: Build Generator
+name: Build
 on:
   push:
     branches:
@@ -15,11 +15,13 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build Generator
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       - name: Build as release with cargo
-        run: cargo build --release
+        run: cd generator && cargo build --release
