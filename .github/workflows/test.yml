@@ -26,8 +26,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       - name: Run clippy with cargo
-        run: cargo clippy --workspace --all-targets --all-features
+        run: cd generator && cargo clippy --workspace --all-targets --all-features
 
   test:
     runs-on: ubuntu-latest
@@ -35,5 +37,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       - name: Run tests with cargo
-        run: cargo test
+        run: cd generator && cargo test
