@@ -1,0 +1,7 @@
+/*
+
+!/src
+!/.gitignore
+!/Cargo.toml
+!/rust-toolchain.toml
+!/rustfmt.toml
