@@ -10,7 +10,7 @@ use crate::{models::shared::Parseable, utils};
 pub(crate) struct VersionManifestEntry {
     pub(crate) id: String,
     pub(crate) url: String,
-    pub(crate) hash: String,
+    pub(crate) sha1: String,
     pub(crate) time: String,
     pub(crate) release_time: String,
 }
@@ -33,7 +33,7 @@ impl VersionManifestEntry {
 
         self.id = new.id;
         self.release_time = new.release_time;
-        self.hash = new.hash;
+        self.sha1 = new.sha1;
         self.time = new.time;
         self.url = new.url;
 

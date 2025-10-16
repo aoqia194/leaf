@@ -8,7 +8,7 @@ use crate::models::shared::Parseable;
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Download {
-    pub(crate) hash: String,
+    pub(crate) sha1: String,
     pub(crate) size: u64,
     pub(crate) url: String,
 }
@@ -53,7 +53,7 @@ pub(crate) struct LauncherManifestArgs {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct LibraryArtifact {
     pub(crate) path: String,
-    pub(crate) hash: String,
+    pub(crate) sha1: String,
     pub(crate) size: u64,
     pub(crate) url: String,
 }
@@ -68,7 +68,7 @@ pub(crate) struct LibraryEntry {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct LauncherManifestAssetIndex {
-    pub(crate) hash: String,
+    pub(crate) sha1: String,
     pub(crate) size: u64,
     pub(crate) url: String,
 }

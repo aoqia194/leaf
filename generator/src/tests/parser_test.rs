@@ -26,7 +26,7 @@ mod tests {
         let entry = &manifest.entries[r"Project Zomboid.app\Contents\Info.plist"];
         assert_eq!(entry.size, 1700);
         assert_eq!(entry.chunks, 1);
-        assert_eq!(entry.hash, "5f77da0bcbf6a8a5571d85030b3cdf002d21da1e");
+        assert_eq!(entry.sha1, "5f77da0bcbf6a8a5571d85030b3cdf002d21da1e");
         assert_eq!(entry.flags, 0);
     }
 

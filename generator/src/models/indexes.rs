@@ -5,6 +5,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AssetIndexEntry {
+    // TODO(aoqia): Maybe change this to "sha1" for parity with other hash fields?
     pub(crate) hash: String,
     pub(crate) size: u64,
 }

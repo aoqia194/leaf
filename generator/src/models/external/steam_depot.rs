@@ -14,7 +14,7 @@ use crate::{
 pub(crate) struct DepotManifestEntry {
     pub(crate) size: u64,
     pub(crate) chunks: u64,
-    pub(crate) hash: String,
+    pub(crate) sha1: String,
     pub(crate) flags: u16,
 }
 
@@ -83,7 +83,7 @@ impl IterParseable for DepotManifest {
                 name.to_owned(),
                 DepotManifestEntry {
                     chunks,
-                    hash: hash.to_owned(),
+                    sha1: hash.to_owned(),
                     size,
                     flags,
                 },

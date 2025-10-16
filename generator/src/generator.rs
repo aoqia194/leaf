@@ -53,7 +53,7 @@ pub(crate) fn version_manifest(
         let version = VersionManifestEntry {
             id: game_version_str.to_owned(),
             url,
-            hash: hash_str,
+            sha1: hash_str,
             time: utils::to_leaf_date(&Utc::now()),
             release_time: utils::to_leaf_date(&utils::from_depot_manifest_date(
                 &depot_manifest.manifest_date,
@@ -204,7 +204,7 @@ pub(crate) fn launcher_manifest(
     }
 
     let manifest = {
-        let (hash, bytes) = utils::file_to_sha1(asset_manifest)?;
+        let (sha1, bytes) = utils::file_to_sha1(asset_manifest)?;
         let url = format!(
             "{}/{}/{}/{}.json",
             INDEXES_URL,
@@ -213,7 +213,7 @@ pub(crate) fn launcher_manifest(
             game_version
         );
         let asset_index = LauncherManifestAssetIndex {
-            hash,
+            sha1,
             size: bytes as u64,
             url,
         };
@@ -243,7 +243,7 @@ pub(crate) fn asset_manifest_internal(manifest: &DepotManifest) -> Result<AssetI
         objects.insert(
             path,
             AssetIndexEntry {
-                hash: entry.hash.clone(),
+                hash: entry.sha1.clone(),
                 size: entry.size,
             },
         );
@@ -282,8 +282,12 @@ pub(crate) fn generate_all(cli: &Cli) -> Result<()> {
         let platform_env = platform.env();
         let depot_id = platform.depot_id();
         let depot_path = cli.depots_dir.join(depot_id.to_string());
+        info!(
+            "Generating all leaf manifests for {}/{}/{}",
+            platform_env, platform_name, depot_id
+        );
 
-        debug!("Parsing depot manifests...");
+        info!("Parsing depot manifests...");
         let depot_manifests = parser::parse_depot_manifests(&depot_path, &version_table)?;
         assert!(!depot_manifests.is_empty());
 
