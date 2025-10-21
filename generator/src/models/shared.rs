@@ -9,7 +9,29 @@ use anyhow::{Context, Result, ensure};
 use serde::Deserialize;
 use tracing::debug;
 
-pub(crate) trait Parseable: Sized + for<'de> Deserialize<'de> {
+pub(crate) trait YamlParseable: Sized + for<'de> Deserialize<'de> {
+    fn parse_from_reader<R: Read>(reader: R) -> Result<Self> {
+        let type_name = type_name::<Self>();
+        debug!("Parsing {} object from reader", type_name);
+        Ok(serde_saphyr::from_reader(reader).unwrap::<Self>())
+    }
+
+    fn parse_from_file(file: &File) -> Result<Self> {
+        let reader = BufReader::new(file);
+        Self::parse_from_reader(reader)
+    }
+
+    fn parse_from_path(path: &PathBuf) -> Result<Self> {
+        ensure!(
+            path.exists(),
+            format!("File doesn't exist at path: {}", path.to_str().unwrap())
+        );
+        let file = File::open(path)?;
+        Self::parse_from_file(&file)
+    }
+}
+
+pub(crate) trait JsonParseable: Sized + for<'de> Deserialize<'de> {
     fn parse_from_reader<R: Read>(reader: R) -> Result<Self> {
         let type_name = type_name::<Self>();
         debug!("Parsing {} object from reader", type_name);
@@ -32,7 +54,7 @@ pub(crate) trait Parseable: Sized + for<'de> Deserialize<'de> {
     }
 }
 
-pub(crate) trait IterParseable: Sized {
+pub(crate) trait JsonIterParseable: Sized {
     fn parse_from_iter<'a, I>(it: I) -> Result<Self>
     where
         I: Iterator<Item = &'a str>;

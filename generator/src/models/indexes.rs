@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use indexmap::IndexMap;
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -13,5 +12,5 @@ pub(crate) struct AssetIndexEntry {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AssetIndexManifest {
-    pub(crate) objects: HashMap<String, AssetIndexEntry>,
+    pub(crate) objects: IndexMap<String, AssetIndexEntry>,
 }

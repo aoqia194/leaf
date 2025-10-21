@@ -3,7 +3,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use tracing::{Level, debug, instrument};
 
-use crate::{models::shared::Parseable, utils};
+use crate::{models::shared::JsonParseable, utils};
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -167,4 +167,4 @@ impl VersionManifest {
     }
 }
 
-impl Parseable for VersionManifest {}
+impl JsonParseable for VersionManifest {}

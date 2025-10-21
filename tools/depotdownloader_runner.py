@@ -35,7 +35,7 @@ def main():
                     f"-depot {depotid}",
                     f"-manifest {manifestid}",
                 ]
-                if branch is not None:
+                if branch is not None and len(branch) > 0:
                     argslist.append(f"-beta {branch}")
                 if sys.argv[2] is not None:
                     argslist.append(f"-dir {sys.argv[2]}")
@@ -52,8 +52,8 @@ def main():
                     if e.stderr:
                         print(f"[DepotDownloader] stderr: {e.stderr}")
                     exit(1)
-    except FileNotFoundError:
-        print(f"ERROR: File {FILENAME} not found.")
+    except FileNotFoundError as e:
+        print(f"ERROR: File {e.filename} not found.")
     except Exception as e:
         print(f"An unexpected error occured: {e}")
 

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::models::shared::Parseable;
+use crate::models::shared::JsonParseable;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -86,4 +86,4 @@ pub(crate) struct LauncherManifest {
     pub(crate) id: String,
 }
 
-impl Parseable for LauncherManifest {}
+impl JsonParseable for LauncherManifest {}

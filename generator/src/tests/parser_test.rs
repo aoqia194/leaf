@@ -3,7 +3,7 @@ mod tests {
     use crate::{
         models::{
             external::{steam_depot::DepotManifest, version_table::VersionTable},
-            shared::{IterParseable, Parseable},
+            shared::{JsonIterParseable, YamlParseable},
         },
         parser,
         tests::test_constants::{TEST_DEPOT_MANIFEST, TEST_VERSION_TABLE},

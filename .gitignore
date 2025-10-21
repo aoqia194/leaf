@@ -8,6 +8,6 @@
 !/manifests
 !/tools
 !/.gitignore
-!/game_versions.json
+!/game_versions.yaml
 !/LICENSE
 !/README.md

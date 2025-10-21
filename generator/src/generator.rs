@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::{self, File},
     io::BufWriter,
     path::PathBuf,
@@ -14,13 +13,14 @@ use crate::{
         external::{steam_depot::DepotManifest, version_table::VersionTable},
         indexes::{AssetIndexEntry, AssetIndexManifest},
         launcher::{LauncherManifest, LauncherManifestAssetIndex},
-        shared::Parseable,
+        shared::{JsonParseable, YamlParseable},
         version::{LatestVersion, VersionManifest, VersionManifestEntry},
     },
     parser, utils,
 };
 use anyhow::{Context, Error, Result, ensure};
 use chrono::{DateTime, Utc};
+use indexmap::IndexMap;
 use semver::Version;
 use strum::IntoEnumIterator;
 use tracing::{Level, debug, info, instrument, trace, warn};
@@ -33,7 +33,7 @@ pub(crate) fn version_manifest(
     launcher_manifest: &PathBuf,
     out: &PathBuf,
 ) -> Result<()> {
-    info!("Generating version manifest");
+    debug!("Generating version manifest");
 
     let game_version_str = game_version.to_string();
 
@@ -81,7 +81,7 @@ pub(crate) fn version_manifest(
     let serialize_result =
         serde_json::to_writer(writer, &manifest).context("Failed to overwrite version manifest");
 
-    debug!("Generated version manifest successfully");
+    info!("Generated version manifest!");
     serialize_result
 }
 
@@ -180,6 +180,7 @@ pub(crate) fn launcher_manifest(
             "Asset manifest related to this launcher manifest doesn't exist",
         ));
     }
+    let (sha1, bytes) = utils::file_to_sha1(asset_manifest)?;
 
     let manifest_date = utils::from_depot_manifest_date(&depot_manifest.manifest_date);
     if !force && out.exists() {
@@ -189,11 +190,20 @@ pub(crate) fn launcher_manifest(
         );
 
         let launcher_manifest = LauncherManifest::parse_from_path(out)?;
+
         let existing_manifest_date =
             utils::from_leaf_manifest_date(&launcher_manifest.release_time);
-        if existing_manifest_date > manifest_date {
+        let existing_indexes_sha1 = launcher_manifest.asset_index.sha1;
+        trace!(
+            "Existing manifest date: {} New manifest date: {}",
+            existing_manifest_date, manifest_date
+        );
+
+        // If the asset indexes manifest has changed, we update the launcher manifest regardless.
+        // Also update if the manifest being parsed has a later date than the existing date.
+        if existing_indexes_sha1 == sha1 || existing_manifest_date <= manifest_date {
             debug!(
-                "Launcher manifest already exists with game version {} at {:?}",
+                "Existing launcher manifest found with game version {} at {:?}",
                 game_version, out
             );
             return Ok(());
@@ -204,7 +214,6 @@ pub(crate) fn launcher_manifest(
     }
 
     let manifest = {
-        let (sha1, bytes) = utils::file_to_sha1(asset_manifest)?;
         let url = format!(
             "{}/{}/{}/{}.json",
             INDEXES_URL,
@@ -231,13 +240,13 @@ pub(crate) fn launcher_manifest(
     let writer = BufWriter::new(f);
     let res = serde_json::to_writer(writer, &manifest).context("Failed to write launcher manifest");
 
-    debug!("Generated launcher manifest successfully");
+    info!("Generated launcher manifest!");
     res
 }
 
 #[instrument(level = Level::TRACE, skip_all)]
 pub(crate) fn asset_manifest_internal(manifest: &DepotManifest) -> Result<AssetIndexManifest> {
-    let mut objects: HashMap<String, AssetIndexEntry> = HashMap::new();
+    let mut objects: IndexMap<String, AssetIndexEntry> = IndexMap::new();
     for (path, entry) in &manifest.entries {
         let path = path.replace("\\", "/");
         objects.insert(
@@ -266,7 +275,7 @@ pub(crate) fn asset_manifest(force: bool, manifest: &DepotManifest, out: &PathBu
     let res = serde_json::to_writer(writer, &asset_index_manifest)
         .context("Failed to write asset index manifest");
 
-    debug!("Generated asset manifest successfully");
+    info!("Generated asset manifest!");
     res
 }
 
@@ -277,21 +286,22 @@ pub(crate) fn generate_all(cli: &Cli) -> Result<()> {
     let manifests_path = cli.output_dir.join("manifests");
     let indexes_path = cli.output_dir.join("indexes");
 
+    let manifests = utils::find_all_manifests(&cli.depots_dir)
+        .context("Failed to find manifests in depots dir")?;
+
     for platform in PlatformDepot::iter() {
         let platform_name = platform.name();
         let platform_env = platform.env();
         let depot_id = platform.depot_id();
-        let depot_path = cli.depots_dir.join(depot_id.to_string());
         info!(
             "Generating all leaf manifests for {}/{}/{}",
             platform_env, platform_name, depot_id
         );
 
         info!("Parsing depot manifests...");
-        let depot_manifests = parser::parse_depot_manifests(&depot_path, &version_table)?;
+        let depot_manifests = parser::parse_depot_manifests(&manifests[&depot_id], &version_table)?;
         assert!(!depot_manifests.is_empty());
 
-        info!("Generating leaf manifests...");
         for (version_str, depot_manifest) in &depot_manifests {
             trace!("Depot manifest version_str: {}", version_str);
             let game_version = Version::parse(version_str)?;
@@ -309,6 +319,7 @@ pub(crate) fn generate_all(cli: &Cli) -> Result<()> {
             fs::create_dir_all(&parent_manifests_path)?;
 
             // This order matters very much!
+            // TODO(aoqia): Maybe move these generator functions to their respective structs?
             asset_manifest(cli.force, depot_manifest, &asset_manifest_file)
                 .context("Failed to generate index manifest")?;
             launcher_manifest(
@@ -329,8 +340,6 @@ pub(crate) fn generate_all(cli: &Cli) -> Result<()> {
                 &version_manifest_file,
             )
             .context("Failed to generate version manifest")?;
-
-            info!("Successfully generated manifests");
         }
     }
 

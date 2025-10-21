@@ -1,12 +1,11 @@
-use std::collections::HashMap;
-
 use anyhow::{Context, Result};
+use indexmap::IndexMap;
 use serde::Deserialize;
 use tracing::{Level, debug, instrument, warn};
 
 use crate::{
     constants::{DEPOT_ENTRY_REGEX, DEPOT_HEADER_REGEX},
-    models::shared::IterParseable,
+    models::shared::JsonIterParseable,
 };
 
 #[derive(Deserialize)]
@@ -29,10 +28,10 @@ pub(crate) struct DepotManifest {
     pub(crate) bytes_disk: u64,
     pub(crate) bytes_compressed: u64,
     /// Holds a map of path:entry
-    pub(crate) entries: HashMap<String, DepotManifestEntry>,
+    pub(crate) entries: IndexMap<String, DepotManifestEntry>,
 }
 
-impl IterParseable for DepotManifest {
+impl JsonIterParseable for DepotManifest {
     #[instrument(level = Level::TRACE, skip_all)]
     fn parse_from_iter<'a, I>(mut it: I) -> Result<Self>
     where
@@ -57,7 +56,7 @@ impl IterParseable for DepotManifest {
                 num_chunks: caps["num_chunks"].parse()?,
                 bytes_disk: caps["bytes_disk"].parse()?,
                 bytes_compressed: caps["bytes_compressed"].parse()?,
-                entries: HashMap::new(),
+                entries: IndexMap::new(),
             }
         };
 

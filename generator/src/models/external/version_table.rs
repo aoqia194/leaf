@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::models::{
     launcher::{LauncherManifestArgs, LibraryEntry},
-    shared::Parseable,
+    shared::YamlParseable,
 };
 
 #[derive(Deserialize)]
@@ -30,4 +30,4 @@ pub(crate) struct VersionTable {
     pub(crate) versions: HashMap<String, VersionTableEntry>,
 }
 
-impl Parseable for VersionTable {}
+impl YamlParseable for VersionTable {}

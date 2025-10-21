@@ -1,14 +1,16 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{BufReader, Read},
     path::PathBuf,
 };
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use sha1::{Digest, Sha1};
-use tracing::{Level, level_filters::LevelFilter, trace};
+use tracing::{Level, debug, level_filters::LevelFilter, trace};
 use tracing_subscriber::{Layer, layer::SubscriberExt};
+use walkdir::WalkDir;
 
 use crate::constants::{DT_FMT_8601, DT_FMT_MANIFEST};
 
@@ -30,6 +32,50 @@ pub(crate) fn from_leaf_manifest_date(s: &str) -> DateTime<Utc> {
 /// Converts a UTC date to a leaf manifest date (ISO-8601)
 pub(crate) fn to_leaf_date(dt: &DateTime<Utc>) -> String {
     dt.format(DT_FMT_8601).to_string()
+}
+
+/// Walks a directory and finds all manifest_XXX_XXX.txt files
+/// Returns the collected results
+pub(crate) fn find_all_manifests(path: &PathBuf) -> Result<HashMap<u32, Vec<PathBuf>>> {
+    let mut manifests = HashMap::new();
+
+    debug!("Finding all depot manifests @ {:?}", path);
+    for entry in WalkDir::new(path).min_depth(1).max_depth(3) {
+        let entry = entry.context("Failed to get manifest file when walking dir")?;
+        let entry_path = entry.path();
+        let entry_stem = entry_path.file_stem();
+        if !entry.file_type().is_file()
+            || entry_path.to_string_lossy().contains(".DepotDownloader")
+            || !entry_stem
+                .unwrap()
+                .to_string_lossy()
+                .starts_with("manifest_")
+            || entry_path.extension().unwrap() != "txt"
+        {
+            trace!(
+                "Entry wasnt a file, didn't start with 'manifest_' {}",
+                "or didn't have a txt extension."
+            );
+            continue;
+        }
+        let entry_stem = entry_stem.unwrap();
+
+        let depot_id = entry_stem
+            .to_string_lossy()
+            .split('_')
+            .nth(1)
+            .context("Failed to get depot id from manifest file name")?
+            .parse::<u32>()
+            .unwrap();
+
+        manifests.entry(depot_id).or_insert_with(Vec::new);
+        let _ = &manifests
+            .get_mut(&depot_id)
+            .unwrap()
+            .push(entry_path.to_path_buf());
+    }
+
+    Ok(manifests)
 }
 
 /// Reads the entirety of a file's bytes into a Sha1 digest.

@@ -11,7 +11,7 @@ pub(crate) const MANIFESTS_URL: &str =
     "https://github.com/aoqia194/leaf/raw/refs/heads/main/manifests";
 
 pub(crate) const VERSION_MANIFEST_JSON: &str = "version_manifest.json";
-pub(crate) const GAME_VERSIONS_JSON: &str = "game_versions.json";
+pub(crate) const GAME_VERSIONS_JSON: &str = "game_versions.yaml";
 
 pub(crate) static DEPOT_HEADER_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(concat!(
@@ -68,6 +68,19 @@ impl PlatformDepot {
             Self::MacServer => 380872,
             Self::LinuxServer => 380873,
             Self::WindowsServer => 380874,
+        }
+    }
+
+    pub(crate) fn from_depot_id(depot_id: u32) -> Option<Self> {
+        match depot_id {
+            108602 => Some(Self::MacClient),
+            108603 => Some(Self::LinuxClient),
+            108604 => Some(Self::WindowsClient),
+            380871 => Some(Self::CommonServer),
+            380872 => Some(Self::MacServer),
+            380873 => Some(Self::LinuxServer),
+            380874 => Some(Self::WindowsServer),
+            _ => None,
         }
     }
 }

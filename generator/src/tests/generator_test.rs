@@ -2,7 +2,7 @@
 mod tests {
     use crate::{
         generator,
-        models::{external::steam_depot::DepotManifest, shared::IterParseable},
+        models::{external::steam_depot::DepotManifest, shared::JsonIterParseable},
         tests::test_constants::TEST_DEPOT_MANIFEST,
     };
     use std::io::Cursor;

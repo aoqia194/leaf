@@ -23,58 +23,36 @@ Size Chunks File SHA                                 Flags Name
 "#};
 
 pub(crate) const TEST_VERSION_TABLE: &str = indoc! {r#"
-{
-  "versions": {
-    "42.0.0-unstable.25057": {
-      "inherits": "41.78.16",
-      "manifests": [
-        7984161633207534069,
-        5804831784883836119,
-        884533456349664449
-      ]
-    },
-    "41.78.16": {
-      "arguments": {
-        "game": [],
-        "jvm": [
-          "-Djava.awt.headless=true",
-          {
-            "rules": [
-              {
-                "action": "allow",
-                "os": {
-                  "name": "windows"
-                }
-              }
-            ],
-            "value": "-Djava.library.path=./win64/;./"
-          },
-          {
-            "rules": [
-              {
-                "action": "allow",
-                "os": {
-                  "name": "linux"
-                }
-              }
-            ],
-            "value": [
-              "-Djava.library.path=./linux64/;./",
-              "-Djava.security.egd=file:/dev/./urandom"
-            ]
-          }
-        ]
-      },
-      "mainClass": {
-        "client": "zombie.gameStates.MainScreenState",
-        "server": "zombie.network.Server"
-      },
-      "manifests": [
-        2540194756181522692,
-        1153657949707515857,
-        6286577881064486829
-      ]
-    }
-  }
-}
+---
+versions:
+  42.0.0-unstable.25057:
+    inherits: 41.78.16
+    manifests:
+      - 7984161633207534069
+      - 5804831784883836119
+      - 884533456349664449
+  41.78.16:
+    arguments:
+      game: []
+      jvm:
+        - "-Djava.awt.headless=true"
+        - rules:
+            - action: allow
+              os:
+                name: windows
+          value: "-Djava.library.path=./win64/;./"
+        - rules:
+            - action: allow
+              os:
+                name: linux
+          value:
+            - "-Djava.library.path=./linux64/;./"
+            - "-Djava.security.egd=file:/dev/./urandom"
+    mainClass:
+      client: zombie.gameStates.MainScreenState
+      server: zombie.network.Server
+    manifests:
+      - 2540194756181522692
+      - 1153657949707515857
+      - 6286577881064486829
 "#};
