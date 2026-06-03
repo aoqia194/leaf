@@ -1,0 +1,15 @@
+# Whitelist by default
+/*
+
+!/tests
+
+!/.gitignore
+!/constants.py
+!/downloader.py
+!/generator.py
+!/main.py
+!/models.py
+!/parser.py
+!/README.md
+!/test_generator.py
+!/util.py

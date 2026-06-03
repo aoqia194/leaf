@@ -1,0 +1,47 @@
+{
+  "latest": {},
+  "versions": {
+    "42.19.0-unstable+1aa820d": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.19.0-unstable+1aa820d.json",
+      "size": "2858",
+      "hash": "cc04e5c95f0160588da416f588bfb806757a7bdf",
+      "releaseTime": "2026-06-01T09:45:52Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    },
+    "42.18.0-unstable+9d7e334": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.18.0-unstable+9d7e334.json",
+      "size": "2858",
+      "hash": "a4f677edcc34ab3691e904b423d81455090b186f",
+      "releaseTime": "2026-05-11T10:07:10Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    },
+    "42.17.0-unstable+07251fd": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.17.0-unstable+07251fd.json",
+      "size": "2858",
+      "hash": "09f7b8a63f1651454ff87822b392b5cf309399d6",
+      "releaseTime": "2026-04-20T14:40:55Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    },
+    "42.16.3-unstable+7eec2b2": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.16.3-unstable+7eec2b2.json",
+      "size": "2855",
+      "hash": "37056e404de32480eddff47b9a2f17ac2b42ee8c",
+      "releaseTime": "2026-04-08T11:58:47Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    },
+    "42.16.2-unstable+4657998": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.16.2-unstable+4657998.json",
+      "size": "2855",
+      "hash": "9d49880b3cddf9c47ac7d664b438d78d339259be",
+      "releaseTime": "2026-04-07T15:00:20Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    },
+    "42.16.1-unstable+6795202": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.16.1-unstable+6795202.json",
+      "size": "2849",
+      "hash": "0480b2d95a4bf6b002b31cc17096eee00e70bd3a",
+      "releaseTime": "2026-04-02T15:03:01Z",
+      "generateTime": "2026-06-03T06:50:56Z"
+    }
+  }
+}

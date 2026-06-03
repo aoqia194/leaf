@@ -5,9 +5,7 @@ This repository so far contains creation and storage of version manifests which 
 
 # Generate them yourself!
 
-1. Download the Steam manifests using [DepotDownloader](https://github.com/SteamRE/DepotDownloader) and pass the depots folder it generates to the generator.
-2. Execute the generator! It takes a couple args, the required ones being `--depots-dir "path/to/depots` and `--output-dir "path/to/output"`. There is also a `--force` parameter for overwriting existing manifests, though you don't need to use that generally.
-   Example: `leaf-generator --output-dir "C:\github\leaf" --depots-dir "G:\Steam\depots"`.
+TODO. A lot has changed.
 
 # Contributing
 

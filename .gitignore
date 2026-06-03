@@ -2,12 +2,13 @@
 /*
 
 !/.github
-!/generator
-!/indexes
-!/loader
-!/manifests
-!/tools
+!/dist
+!/overrides
+!/src
 !/.gitignore
-!/game_versions.yaml
+!/.python-version
 !/LICENSE
+!/NOTES.md
+!/pyproject.toml
 !/README.md
+!/uv.lock
