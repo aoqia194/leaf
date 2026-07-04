@@ -1,18 +1,22 @@
 import hashlib
-from dataclasses import astuple, dataclass, replace
+import json
+from dataclasses import astuple, dataclass, field, replace
 from enum import Enum
 from json import JSONDecodeError
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Optional
+from typing import Any, Optional, override
 
-import deepmerge
-from dataclasses_json import DataClassJsonMixin, LetterCase, dataclass_json
+from dataclasses_json import DataClassJsonMixin, LetterCase, config, dataclass_json
 from deepmerge.merger import Merger
 from deepmerge.strategy.core import STRATEGY_END
 from loguru import logger
 
 from leaf import util
+
+
+def filtered_optional_field(default: Any = None):
+    return field(default=default, metadata=config(exclude=lambda v: v is None))
 
 
 def merge_dataclass(
@@ -27,11 +31,107 @@ def merge_dataclass(
         for name in base.__dataclass_fields__:  # pyright: ignore[reportAttributeAccessIssue]
             base_val = getattr(base, name)
             nxt_val = getattr(nxt, name)
-            updated_fields[name] = merger.merge(base_val, nxt_val)
+
+            # If the replacement value is None, use the original val
+            if nxt_val is None:
+                updated_fields[name] = base_val
+            else:
+                updated_fields[name] = merger.merge(base_val, nxt_val)
 
         return replace(base, **updated_fields)  # pyright: ignore[reportArgumentType]
 
     return STRATEGY_END
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
+@dataclass(slots=True)
+class BaseJsonDataClass(DataClassJsonMixin):
+    def merge_generic[T](self: T, nxt: T) -> T:
+        merger = Merger(
+            type_strategies=[
+                (list, "append"),
+                (dict, "merge"),
+            ],
+            fallback_strategies=[merge_dataclass, "override"],
+            type_conflict_strategies=[merge_dataclass, "override"],
+        )
+
+        return merger.merge(self, nxt)
+
+
+@dataclass(slots=True)
+class IOJsonDataClass(BaseJsonDataClass):
+    @classmethod
+    def read_file(cls, file: Path):
+        try:
+            return cls.from_json(file.read_text())
+        except JSONDecodeError as e:
+            raise RuntimeError(
+                f"Failed to parse {cls.__name__}: a JSON decode error has occurred"
+            ) from e
+
+    def write_file(
+        self,
+        file: Path,
+        overwrite: bool = False,
+        minify: bool = False,
+        allow_null: bool = True,
+        sort_keys: bool = False,
+    ):
+        """
+        Takes a dataclass and writes it as json to a file.
+        Will automatically overwrite if the file exists and `overwrite` is True.
+        Will minify the output if `minify` is True.
+        """
+
+        start = perf_counter()
+
+        if not overwrite and file.exists():
+            raise RuntimeError(
+                f"Writing {type(self).__name__} failed because file exists and overwrite was False"
+            )
+
+        with open(file, "w", encoding="utf-8") as f:
+            if allow_null:
+                f.write(
+                    self.to_json(
+                        indent=None if minify else 2,
+                        allow_nan=False,
+                        ensure_ascii=True,
+                        sort_keys=sort_keys,
+                        separators=(",", ":") if minify else None,
+                    )
+                )
+            else:
+                raw = self.to_dict()
+                clean = util.remove_null_inplace(raw)
+
+                f.write(
+                    json.dumps(
+                        clean,
+                        indent=None if minify else 2,
+                        allow_nan=False,
+                        ensure_ascii=True,
+                        sort_keys=sort_keys,
+                        separators=(",", ":") if minify else None,
+                    )
+                )
+
+        stop = perf_counter()
+        logger.trace(f"Writing {type(self).__name__} took {((stop - start) * 1000):.3f}ms")
+
+    def update_file(self, file: Path):
+        """
+        Updates a file that contains this class by generic-merging
+            it with this class instance and then writing back the result.
+        """
+
+        if not file.exists():
+            raise RuntimeError("Updating existing file failed because it didn't exist")
+
+        existing = type(self).read_file(file)
+        existing.merge_generic(self)
+        existing.write_file(file, overwrite=True)
 
 
 @dataclass(slots=True)
@@ -44,17 +144,21 @@ class SemVer:
 
     @classmethod
     def parse(cls, s: str):
-        dash = s.index("-")
-        plus = s.index("+")
+        version_num, rest = s.split("-", 1)
+        major, minor, patch = map(int, version_num.split("."))
 
-        parts = s[:dash].split(".")
-        branch = s[dash:plus]
-        build_id = s[plus:]
+        branch = None
+        build_id = None
+
+        if "+" in rest:
+            branch, build_id = rest.split("+", 1)
+        else:
+            branch, build_id = rest.split(".", 1)
 
         return cls(
-            major=int(parts[0]),
-            minor=int(parts[1]),
-            patch=int(parts[2]),
+            major=major,
+            minor=minor,
+            patch=patch,
             branch=branch,
             build_id=build_id,
         )
@@ -109,9 +213,8 @@ class GamePlatform(Enum):
         return obj
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class SteamInfo(DataClassJsonMixin):
+class SteamInfo(BaseJsonDataClass):
     app_id: str
     depot_id: str
     manifest_id: str
@@ -129,6 +232,7 @@ class GameInfo:
     patch: int
     class_version: int
     main_class: str
+    class_path: list[str]
     arguments: BuildManifestArguments
 
     git_branch: Optional[str] = None
@@ -146,9 +250,8 @@ class GameInfo:
     """
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class LauncherConfig(DataClassJsonMixin):
+class LauncherConfig(IOJsonDataClass):
     """
     Holds data that was parsed from a game launcher config
     """
@@ -156,105 +259,31 @@ class LauncherConfig(DataClassJsonMixin):
     main_class: str
     classpath: list[str]
     vm_args: list[str]
-    windows: Optional[dict[str, Any]] = None
-
-    @classmethod
-    def read(cls, file: Path):
-        """
-        Parses a game launcher config file into an object
-        """
-
-        try:
-            with open(file, "r", encoding="utf-8") as f:
-                return cls.from_json(f.read())
-        except JSONDecodeError as e:
-            raise RuntimeError(
-                "Failed to parse game launcher config: a JSON decode error has occurred"
-            ) from e
+    windows: Optional[dict[str, Any]] = filtered_optional_field()
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class AssetManifest(DataClassJsonMixin):
+class AssetManifest(IOJsonDataClass):
     objects: dict[str, AssetManifestEntry]
 
-    def write(self, file: Path, overwrite: bool = False):
-        """
-        Takes a Manifest and writes it as json to a file.
-        Will automatically overwrite if the file exists and `overwrite` is True.
-        """
 
-        start = perf_counter()
-
-        if not overwrite and file.exists():
-            logger.warning(
-                "Writing asset manifest failed because file exists and overwrite was False"
-            )
-            return
-
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(
-                util.remove_null_inplace(
-                    self.to_json(
-                        indent=None, allow_nan=False, ensure_ascii=True, separators=(",", ":")
-                    )
-                )
-            )
-
-        stop = perf_counter()
-        logger.info(f"Writing AssetManifest took {((stop - start) * 1000):.3f}ms")
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class AssetManifestEntry(DataClassJsonMixin):
+class AssetManifestEntry(BaseJsonDataClass):
     hash: str
     size: str
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class IndexManifest(DataClassJsonMixin):
+class IndexManifest(IOJsonDataClass):
     latest: dict[str, str]
     """
     Holds the latest steam_branch->version info
     """
     versions: dict[str, IndexManifestVersion]
 
-    @classmethod
-    def read(cls, file: Path):
-        try:
-            with open(file, "r", encoding="utf-8") as f:
-                return cls.from_json(f.read())
-        except JSONDecodeError as e:
-            raise RuntimeError(
-                "Failed to parse index manifest: a JSON decode error has occurred"
-            ) from e
 
-    def write(self, file: Path, overwrite: bool = False):
-        """
-        Takes in an instance and writes it as json to a file.
-        Will automatically overwrite if the file exists and `overwrite` is True.
-        """
-
-        start = perf_counter()
-
-        if not overwrite and file.exists():
-            logger.warning("Writing index.json failed because file exists and overwrite was False")
-            return
-
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(
-                util.remove_null_inplace(self.to_json(indent=2, allow_nan=False, ensure_ascii=True))
-            )
-
-        stop = perf_counter()
-        logger.info(f"Writing index.json took {((stop - start) * 1000):.3f}ms")
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class IndexManifestVersion(DataClassJsonMixin):
+class IndexManifestVersion(BaseJsonDataClass):
     url: str
     size: str
     hash: str
@@ -262,18 +291,11 @@ class IndexManifestVersion(DataClassJsonMixin):
     generate_time: str
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifest(DataClassJsonMixin):
-    """
-    Holds data that was parsed from game files
-    """
-
+class BuildManifest(IOJsonDataClass):
     id: str
+    """ The parsed version label for this build. """
     steam_branch: str
-    git_branch: Optional[str]
-    """ A git branch name. Is null on pre-b42 builds. """
-    git_hash: Optional[str]
     """ A git commit hash. Is null on pre-b42 builds. """
     java_version: int
     """The Java version of the game's code"""
@@ -283,127 +305,131 @@ class BuildManifest(DataClassJsonMixin):
     """The Steam manifest ids linked to this version"""
     asset_indexes: BuildManifestAssetIndexes
     """The asset index references that are stored"""
+    class_path: list[str]
+    """The entries on the JVM class path as found by the launcher config"""
     arguments: BuildManifestArguments
     """The arguments that can be found in the launcher config"""
     release_time: str
     """The time at which the game version was published"""
     generate_time: str
     """The time at which this manifest was generated"""
+    git_branch: Optional[str] = filtered_optional_field()
+    """ A git branch name. Is null on pre-b42 builds. """
+    git_hash: Optional[str] = filtered_optional_field()
 
-    def write(self, file: Path, merge: bool = True):
+    def merge_arguments(self, other: BuildManifestArguments):
         """
-        Takes a Manifest and writes it as json to a file.
-        Will automatically merge if the file exists and `merge` is True.
+        Merges other into self.
         """
 
-        start = perf_counter()
+        self.arguments.game.extend(other.game)
 
-        other: Optional[BuildManifest] = None
-        if merge and file.exists():
-            with open(file, "r", encoding="utf-8") as f:
-                other = BuildManifest.from_json(f.read())
+        for k1, v1 in other.jvm.items():
+            v2 = self.arguments.jvm.get(k1)
+            if v2 is None:
+                continue
 
-            other.manifests.merge_with(self.manifests)
+            if v1.rules != v2.rules:
+                v2.rules.extend(v1.rules)
 
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(
-                util.remove_null_inplace(
-                    (other or self).to_json(indent=2, allow_nan=False, ensure_ascii=True)
-                )
-            )
+    def merge(self, other: BuildManifest):
+        """
+        Merges other into self. Currently only merges manifests.
+        """
 
-        stop = perf_counter()
-        logger.info(f"Writing BuildManifest took {((stop - start) * 1000):.3f}ms")
+        # Prioritise other main class (bc >MACOS is more likely to have it)
+        if self.main_class != other.main_class:
+            self.main_class = other.main_class
+
+        self.merge_arguments(other.arguments)
+        self.asset_indexes = self.asset_indexes.merge_generic(other.asset_indexes)
+        self.manifests = self.manifests.merge_generic(other.manifests)
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifestManifests(DataClassJsonMixin):
+class BuildManifestManifests(BaseJsonDataClass):
     client: BuildManifestManifestsEntry
     server: BuildManifestManifestsEntry
 
-    def get_environment(self, env: Environment):
+    def get_environment_field(self, env: Environment) -> BuildManifestManifestsEntry:
         return getattr(self, env.value)
 
-    def merge_with(self, nxt: BuildManifestManifests) -> BuildManifestManifests:
-        merger = Merger(
-            type_strategies=[
-                (list, "append"),
-                (dict, "merge"),
-            ],
-            fallback_strategies=[merge_dataclass, "override"],
-            type_conflict_strategies=[merge_dataclass, "override"],
-        )
 
-        return merger.merge(self, nxt)
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifestManifestsEntry(DataClassJsonMixin):
-    macos: list[str]
-    linux: list[str]
-    windows: list[str]
-    common: Optional[list[str]] = None
+class BuildManifestManifestsEntry(BaseJsonDataClass):
+    macos: list[str] = field(default_factory=list)
+    linux: list[str] = field(default_factory=list)
+    windows: list[str] = field(default_factory=list)
+    common: Optional[list[str]] = filtered_optional_field()
     """
     Only appears for server depots!
     """
 
-    def get_platform(self, platform: Platform) -> Optional[list[str]]:
+    def get_platform_field(self, platform: Platform) -> Optional[list[str]]:
         return getattr(self, platform.value)
 
-
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
-@dataclass(slots=True)
-class BuildManifestAssetIndexes(DataClassJsonMixin):
-    macos: Optional[BuildManifestAssetIndexesEntry] = None
-    linux: Optional[BuildManifestAssetIndexesEntry] = None
-    windows: Optional[BuildManifestAssetIndexesEntry] = None
-    common: Optional[BuildManifestAssetIndexesEntry] = None
-    """
-    Only appears for server depots!
-    """
-
-    def get_platform(self, platform: Platform) -> Optional[BuildManifestAssetIndexesEntry]:
-        return getattr(self, platform.value)
-
-    def set_platform(self, platform: Platform, value: BuildManifestAssetIndexesEntry):
+    def set_platform_field(self, platform: Platform, value: Optional[list[str]]):
         getattr(self, platform.value)
         setattr(self, platform.value, value)
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifestAssetIndexesEntry(DataClassJsonMixin):
+class BuildManifestAssetIndexes(BaseJsonDataClass):
+    client: BuildManifestAssetIndexesEntry
+    server: BuildManifestAssetIndexesEntry
+
+    def get_env_field(self, env: Environment) -> BuildManifestAssetIndexesEntry:
+        return getattr(self, env.value)
+
+    def set_env_field(self, env: Environment, value: BuildManifestAssetIndexesEntry):
+        getattr(self, env.value)
+        setattr(self, env.value, value)
+
+
+@dataclass(slots=True)
+class BuildManifestAssetIndexesEntry(BaseJsonDataClass):
+    macos: Optional[BuildManifestAssetIndexesEntryValue] = filtered_optional_field()
+    linux: Optional[BuildManifestAssetIndexesEntryValue] = filtered_optional_field()
+    windows: Optional[BuildManifestAssetIndexesEntryValue] = filtered_optional_field()
+    common: Optional[BuildManifestAssetIndexesEntryValue] = filtered_optional_field()
+    """
+    Only appears for server depots!
+    """
+
+    def get_platform_field(self, platform: Platform) -> BuildManifestAssetIndexesEntryValue:
+        return getattr(self, platform.value)
+
+    def set_platform_field(self, platform: Platform, value: BuildManifestAssetIndexesEntryValue):
+        getattr(self, platform.value)
+        setattr(self, platform.value, value)
+
+
+@dataclass(slots=True)
+class BuildManifestAssetIndexesEntryValue(BaseJsonDataClass):
     sha1: str
     size: str
     url: str
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifestArguments(DataClassJsonMixin):
+class BuildManifestArguments(BaseJsonDataClass):
     game: list[str]
-    jvm: list[BuildManifestArgumentsEntry]
+    jvm: dict[str, BuildManifestArgumentsEntry]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class BuildManifestArgumentsEntry(DataClassJsonMixin):
-    value: str
+class BuildManifestArgumentsEntry(BaseJsonDataClass):
     rules: list[ArgumentRule]
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class ArgumentRule(DataClassJsonMixin):
+class ArgumentRule(BaseJsonDataClass):
     allow: bool
     platform: ArgumentRulePlatform
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL)  # type: ignore
 @dataclass(slots=True)
-class ArgumentRulePlatform(DataClassJsonMixin):
+class ArgumentRulePlatform(BaseJsonDataClass):
     name: str
     arch: str
 

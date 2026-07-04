@@ -135,16 +135,17 @@ def parse_game_info(
 
     # Parsing launcher config stuff
 
-    launcher_manifests = [
-        next(game_folder.rglob("**/ProjectZomboid64.json"), None),
-        next(game_folder.rglob("**/ProjectZomboid32.json"), None),
+    launch_config_files = [
+        next(game_folder.glob("**/ProjectZomboid64.json"), None),
+        next(game_folder.glob("**/ProjectZomboid32.json"), None),
     ]
     launcher_configs = [
-        parse_launcher_config(m) for m in launcher_manifests if m is not None and m.exists()
+        parse_launcher_config(m) for m in launch_config_files if m is not None and m.exists()
     ]
 
     main_class: Optional[str] = None
-    arguments: BuildManifestArguments = BuildManifestArguments(game=[], jvm=[])
+    class_path: list[str] = []
+    arguments: BuildManifestArguments = BuildManifestArguments(game=[], jvm={})
 
     # If we are JAR format, we can optionally get the main class from the manifest
     # This is a backup option if there were no launcher manifests to read from
@@ -164,35 +165,35 @@ def parse_game_info(
             raise RuntimeError("Failed to parse game info: no main class found in jar manifest")
 
     if len(launcher_configs) > 0:
-        first_config_file = next((f for f in launcher_manifests if f is not None), None)
+        first_config_file = next((f for f in launch_config_files if f is not None), None)
         first = next((c for c in launcher_configs if c is not None), None)
         if first_config_file is not None and first is not None:
             if main_class is None:
-                main_class = first.main_class
-                logger.debug("Found main class in launcher config")
+                main_class = first.main_class.replace("/", ".")
+                logger.trace("Found main class in launcher config")
+
+            class_path.extend(first.classpath)
 
             for arg in first.vm_args:
                 stem = first_config_file.stem
-                arguments.jvm.append(
-                    BuildManifestArgumentsEntry(
-                        value=arg,
-                        rules=[
-                            ArgumentRule(
-                                allow=True,
-                                platform=ArgumentRulePlatform(
-                                    name=game_platform.platform.value,
-                                    arch=f"x{stem[len("ProjectZomboid") :]}",
-                                ),
-                            )
-                        ],
-                    )
+                arguments.jvm[arg] = BuildManifestArgumentsEntry(
+                    rules=[
+                        ArgumentRule(
+                            allow=True,
+                            platform=ArgumentRulePlatform(
+                                name=game_platform.platform.value,
+                                arch=f"x{"64" if stem == "ProjectZomboid64.json" else "86"}",
+                            ),
+                        )
+                    ],
                 )
-            logger.debug("Found jvm arguments in launcher config")
+            logger.trace("Found jvm arguments in launcher config")
 
     if main_class is None:
+        logger.warning("Main class not found!")
+        main_class = ""
         # Just fall back to a hardcoded path because oh well.
-        logger.warning("Using fallback main class")
-        main_class = "zombie.gameStates.MainScreenState"
+        # main_class = "zombie.gameStates.MainScreenState"
 
     o = GameInfo(
         major=major,
@@ -203,16 +204,17 @@ def parse_game_info(
         revision=revision,
         class_version=class_version,
         main_class=main_class,
+        class_path=class_path,
         arguments=arguments,
     )
 
     stop = perf_counter()
-    logger.info(f"Parsed game info after {((stop - start) * 1000):.3f}ms")
+    logger.trace(f"Parsed game info after {((stop - start) * 1000):.3f}ms")
 
     return o
 
 
-def parse_launcher_config(input_file: Path) -> LauncherConfig:
+def parse_launcher_config(input_file: Path) -> Optional[LauncherConfig]:
     """
     Parses the launcher config whilst also removing unnecessary things.
     """
@@ -220,19 +222,23 @@ def parse_launcher_config(input_file: Path) -> LauncherConfig:
     logger.trace("Parsing launcher config...")
     start = perf_counter()
 
-    config = LauncherConfig.read(input_file)
+    try:
+        config = LauncherConfig.read_file(input_file)
+    except RuntimeError as e:
+        logger.warning(str(e))
+        return None
 
     # config.vm_args[:] = [
     #     arg for arg in config.vm_args if not arg.startswith("-Xms") and not arg.startswith("-Xmx")
     # ]
 
     stop = perf_counter()
-    logger.info(f"Parsed launcher config after {((stop - start) * 1000):.3f}ms")
+    logger.trace(f"Parsed launcher config after {((stop - start) * 1000):.3f}ms")
 
     return config
 
 
-def parse_depot_manifest(input_file: Path) -> DepotManifest:
+def parse_depot_manifest(manifest_file: Path) -> DepotManifest:
     logger.trace("Parsing depot manifest...")
     start = perf_counter()
 
@@ -245,7 +251,7 @@ def parse_depot_manifest(input_file: Path) -> DepotManifest:
     num_bytes_compressed: Optional[str] = None
     entries: list[DepotManifestEntry] = []
 
-    with input_file.open("r", encoding="utf-8") as f:
+    with manifest_file.open("r", encoding="utf-8") as f:
         # Parse the header
         for _ in range(10):
             line = next(f).rstrip()
@@ -332,6 +338,6 @@ def parse_depot_manifest(input_file: Path) -> DepotManifest:
     )
 
     stop = perf_counter()
-    logger.info(f"Parsed depot manifest after {((stop - start) * 1000):.3f}ms")
+    logger.trace(f"Parsed depot manifest after {((stop - start) * 1000):.3f}ms")
 
     return depot_manifest

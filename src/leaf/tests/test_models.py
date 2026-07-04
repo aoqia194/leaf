@@ -1,7 +1,7 @@
 from leaf.models import BuildManifestManifests, BuildManifestManifestsEntry
 
 
-def test_BuildManifestManifests_merge():
+def test_merge_BuildManifestManifests():
     first = BuildManifestManifests(
         client=BuildManifestManifestsEntry(macos=["456"], linux=["1234567890"], windows=[]),
         server=BuildManifestManifestsEntry(
@@ -13,7 +13,7 @@ def test_BuildManifestManifests_merge():
         server=BuildManifestManifestsEntry(macos=["8888"], linux=[], windows=[], common=[]),
     )
 
-    merged = first.merge_with(second)
+    merged = first.merge_generic(second)
 
     assert merged.client.macos == ["456", "444"]
     assert merged.client.linux == ["1234567890", "0987654321"]

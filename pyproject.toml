@@ -24,9 +24,9 @@ build-backend = "hatchling.build"
 packages = ["src/leaf"]
 
 [tool.hatch.envs.default.scripts]
-generate = "python src/leaf/main.py generate --manifests-file manifests.txt"
-download = "python src/leaf/main.py download --manifests-file manifests.txt"
-profile = "scalene run src/leaf/main.py generate --manifests-file manifests.txt"
+generate = "python src/leaf/main.py generate {args}"
+download = "python src/leaf/main.py download{args}"
+profile = "scalene run src/leaf/main.py generate {args}"
 test = "pytest"
 lint = "ruff check src/leaf/"
 

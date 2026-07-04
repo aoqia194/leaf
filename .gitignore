@@ -2,9 +2,10 @@
 /*
 
 !/.github
+!/.vscode
 !/dist
-!/overrides
 !/src
+
 !/.gitignore
 !/.python-version
 !/LICENSE

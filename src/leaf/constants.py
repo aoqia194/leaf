@@ -15,7 +15,7 @@ from project_paths import paths, project_root
 load_dotenv(project_root.joinpath(".env"))
 
 VINEFLOWER_PATH: Optional[str] = os.environ.get(
-    "VINEFLOWER_PATH", "vineflower" if shutil.which("vineflower") else None
+    "VINEFLOWER_PATH", ("vineflower" if shutil.which("vineflower") else None)
 )
 
 OUT_PATH = project_root / "out"

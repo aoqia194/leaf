@@ -1,0 +1,52 @@
+{
+  "id": "42.1.0-unstable.25882",
+  "steamBranch": "unstable",
+  "javaVersion": 17,
+  "mainClass": "zombie.gameStates.MainScreenState",
+  "manifests": {
+    "client": {
+      "macos": [
+        "3946901903446806259"
+      ],
+      "linux": [
+        "5859153705121758493"
+      ],
+      "windows": [
+        "3867962024162471441"
+      ]
+    },
+    "server": {
+      "macos": [],
+      "linux": [],
+      "windows": [],
+      "common": []
+    }
+  },
+  "assetIndexes": {
+    "client": {
+      "macos": {
+        "sha1": "2e2181986f681d3ab38541802083e8f821b59e02",
+        "size": "7403112",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.1.0-unstable.25882.json"
+      },
+      "linux": {
+        "sha1": "d8732c9ed0a702a26dfb5297c2c0017cffd98152",
+        "size": "6454061",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.1.0-unstable.25882.json"
+      },
+      "windows": {
+        "sha1": "713f312e2d0e6913b83882836820178c4a7ca151",
+        "size": "5749705",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.1.0-unstable.25882.json"
+      }
+    },
+    "server": {}
+  },
+  "classPath": [],
+  "arguments": {
+    "game": [],
+    "jvm": {}
+  },
+  "releaseTime": "2025-01-21T12:08:45Z",
+  "generateTime": "2026-07-04T07:59:25Z"
+}
