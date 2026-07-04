@@ -139,21 +139,29 @@ class SemVer:
     major: int
     minor: int
     patch: int
-    branch: str
-    build_id: str
+    branch: Optional[str]
+    build_id: Optional[str]
 
     @classmethod
     def parse(cls, s: str):
-        version_num, rest = s.split("-", 1)
+        logger.trace("Parsing version: {}", s)
+
+        if "-" in s:
+            version_num, rest = s.split("-", 1)
+        else:
+            version_num = s
+            rest = None
+
         major, minor, patch = map(int, version_num.split("."))
 
         branch = None
         build_id = None
 
-        if "+" in rest:
-            branch, build_id = rest.split("+", 1)
-        else:
-            branch, build_id = rest.split(".", 1)
+        if rest is not None:
+            if "+" in rest:
+                branch, build_id = rest.split("+", 1)
+            else:
+                branch, build_id = rest.split(".", 1)
 
         return cls(
             major=major,
@@ -334,11 +342,11 @@ class BuildManifest(IOJsonDataClass):
 
     def merge(self, other: BuildManifest):
         """
-        Merges other into self. Currently only merges manifests.
+        Merges other into self.
         """
 
         # Prioritise other main class (bc >MACOS is more likely to have it)
-        if self.main_class != other.main_class:
+        if self.main_class == "":
             self.main_class = other.main_class
 
         self.merge_arguments(other.arguments)
