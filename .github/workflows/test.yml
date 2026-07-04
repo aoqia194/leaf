@@ -17,6 +17,6 @@ jobs:
       - name: Setup UV
         uses: astral-sh/setup-uv@v8.1.0
       - name: Sync UV (no venv)
-        run: uv pip install .
+        run: uv pip install --system .
       - name: Run tests with pytest
         run: uv run --frozen pytest
