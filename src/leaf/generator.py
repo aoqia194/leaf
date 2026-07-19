@@ -117,8 +117,9 @@ def generate_internal(
         game_platform=game_platform,
     )
 
+    build_manifest_file = MANIFESTS_PATH / f"{version_label}.json"
     build_manifest_ref = generate_build_manifest(
-        (MANIFESTS_PATH / f"{version_label}.json"),
+        build_manifest_file,
         version_label=version_label,
         asset_manifest_ref=asset_manifest_ref,
         steam_info=steam_info,
@@ -131,6 +132,7 @@ def generate_internal(
         (MANIFESTS_PATH / "index.json"),
         steam_info=steam_info,
         version_label=version_label,
+        build_manifest_file=build_manifest_file,
         build_manifest_ref=build_manifest_ref,
     )
 
@@ -142,6 +144,7 @@ def generate_index_manifest(
     file: Path,
     steam_info: SteamInfo,
     version_label: str,
+    build_manifest_file: Path,
     build_manifest_ref: IndexManifestVersion,
 ):
     # Create and write the manifest if overwrite or it doesn't exist
@@ -156,9 +159,15 @@ def generate_index_manifest(
         logger.debug("Found newer version for index json")
         index_json.latest[steam_info.branch] = version_label
 
-    # Only set version if there isn't one already
+    # If there's no version, just add it.
+    # If there's already a version, assume merging happened (file updated)
+    #   and so update the hash and size!
     if index_json.versions.get(version_label) is None:
         index_json.versions[version_label] = build_manifest_ref
+    else:
+        v = index_json.versions[version_label]
+        v.hash = sha1(build_manifest_file.read_bytes()).hexdigest()
+        v.size = str(build_manifest_file.stat().st_size)
 
     index_json.write_file(file, overwrite=True)
 
