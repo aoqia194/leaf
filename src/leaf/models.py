@@ -5,7 +5,7 @@ from enum import Enum
 from json import JSONDecodeError
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Optional, override
+from typing import Any, Optional
 
 from dataclasses_json import DataClassJsonMixin, LetterCase, config, dataclass_json
 from deepmerge.merger import Merger
@@ -321,9 +321,12 @@ class BuildManifest(IOJsonDataClass):
     """The time at which the game version was published"""
     generate_time: str
     """The time at which this manifest was generated"""
+    libraries: list[Any]
+    """ TODO: Implement. A list of libraries the game comes with. """
     git_branch: Optional[str] = filtered_optional_field()
     """ A git branch name. Is null on pre-b42 builds. """
     git_hash: Optional[str] = filtered_optional_field()
+    """ The short git hash of the published commit. Is null on pre-b42 builds. """
 
     def merge_arguments(self, other: BuildManifestArguments):
         """

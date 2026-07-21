@@ -317,6 +317,7 @@ def create_build_manifest(
         class_path=game_info.class_path,
         release_time=depot_manifest.manifest_date,
         generate_time=GENERATE_DATE,
+        libraries=[],
     )
 
     # Add current manifest id to Manifest manifests.
