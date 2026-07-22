@@ -7,6 +7,7 @@ from leaf.models import (
     DepotManifestEntry,
     GameInfo,
     GamePlatform,
+    MainClass,
     SteamInfo,
 )
 
@@ -79,7 +80,7 @@ def test_generate_version_manifest():
     assert m1.git_branch == "steam/release"
     assert m1.git_hash == "1aa820d7bb66c4e55513cae04022bdacdac5b34e"
     assert m1.java_version == 25
-    assert m1.main_class == "zombie.gameStates.MainScreenState"
+    assert m1.main_class == MainClass(client="zombie.gameStates.MainScreenState", server=None)
 
     assert len(m1.manifests.client.macos) == 1
     assert len(m1.manifests.client.linux) == 1
