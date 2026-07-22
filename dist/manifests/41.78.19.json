@@ -2,7 +2,10 @@
   "id": "41.78.19",
   "steamBranch": "public",
   "javaVersion": 17,
-  "mainClass": "zombie.gameStates.MainScreenState",
+  "mainClass": {
+    "client": "zombie.gameStates.MainScreenState",
+    "server": "zombie.network.GameServer"
+  },
   "manifests": {
     "client": {
       "macos": [
@@ -77,6 +80,6 @@
     "jvm": {}
   },
   "releaseTime": "2026-04-08T12:45:32Z",
-  "generateTime": "2026-07-21T06:15:46Z",
+  "generateTime": "2026-07-22T09:16:45Z",
   "libraries": []
 }

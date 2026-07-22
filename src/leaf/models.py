@@ -239,7 +239,7 @@ class GameInfo:
     minor: int
     patch: int
     class_version: int
-    main_class: str
+    main_class: Optional[str]
     class_path: list[str]
     arguments: BuildManifestArguments
 
@@ -307,7 +307,7 @@ class BuildManifest(IOJsonDataClass):
     """ A git commit hash. Is null on pre-b42 builds. """
     java_version: int
     """The Java version of the game's code"""
-    main_class: str
+    main_class: MainClass
     """The main class/entrypoint of the game for Java"""
     manifests: BuildManifestManifests
     """The Steam manifest ids linked to this version"""
@@ -349,8 +349,10 @@ class BuildManifest(IOJsonDataClass):
         """
 
         # Prioritise other main class (bc >MACOS is more likely to have it)
-        if self.main_class == "":
-            self.main_class = other.main_class
+        if self.main_class.client is None:
+            self.main_class.client = other.main_class.client
+        if self.main_class.server is None:
+            self.main_class.server = other.main_class.server
 
         self.merge_arguments(other.arguments)
         self.asset_indexes = self.asset_indexes.merge_generic(other.asset_indexes)
@@ -358,11 +360,23 @@ class BuildManifest(IOJsonDataClass):
 
 
 @dataclass(slots=True)
+class MainClass(BaseJsonDataClass):
+    client: Optional[str]
+    server: Optional[str]
+
+    def get_env_field(self, env: Environment) -> str:
+        return getattr(self, env.value)
+
+    def set_env_field(self, env: Environment, value: Optional[str]):
+        setattr(self, env.value, value)
+
+
+@dataclass(slots=True)
 class BuildManifestManifests(BaseJsonDataClass):
     client: BuildManifestManifestsEntry
     server: BuildManifestManifestsEntry
 
-    def get_environment_field(self, env: Environment) -> BuildManifestManifestsEntry:
+    def get_env_field(self, env: Environment) -> BuildManifestManifestsEntry:
         return getattr(self, env.value)
 
 
@@ -380,7 +394,6 @@ class BuildManifestManifestsEntry(BaseJsonDataClass):
         return getattr(self, platform.value)
 
     def set_platform_field(self, platform: Platform, value: Optional[list[str]]):
-        getattr(self, platform.value)
         setattr(self, platform.value, value)
 
 

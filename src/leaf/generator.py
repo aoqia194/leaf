@@ -34,6 +34,7 @@ from leaf.models import (
     GamePlatform,
     IndexManifest,
     IndexManifestVersion,
+    MainClass,
     Platform,
     SteamInfo,
 )
@@ -301,13 +302,16 @@ def create_build_manifest(
     platform = game_platform.platform
     env = game_platform.env
 
+    main_class = MainClass(client=None, server=None)
+    main_class.set_env_field(env, game_info.main_class)
+
     data = BuildManifest(
         id=version_label,
         steam_branch=steam_info.branch,
         git_branch=game_info.git_branch,
         git_hash=game_info.git_hash,
         java_version=game_info.class_version - 44,
-        main_class=game_info.main_class,
+        main_class=main_class,
         manifests=BuildManifestManifests(
             client=BuildManifestManifestsEntry(),
             server=BuildManifestManifestsEntry(common=[]),
@@ -322,7 +326,7 @@ def create_build_manifest(
 
     # Add current manifest id to Manifest manifests.
     # Type checking is required because of "safety"
-    entry = data.manifests.get_environment_field(env).get_platform_field(platform)
+    entry = data.manifests.get_env_field(env).get_platform_field(platform)
     if entry is not None:
         entry.append(steam_info.manifest_id)
 

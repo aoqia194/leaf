@@ -2,7 +2,10 @@
   "id": "42.19.0-unstable+1aa820d",
   "steamBranch": "unstable",
   "javaVersion": 25,
-  "mainClass": "zombie.gameStates.MainScreenState",
+  "mainClass": {
+    "client": "zombie.gameStates.MainScreenState",
+    "server": "zombie.network.GameServer"
+  },
   "manifests": {
     "client": {
       "macos": [
@@ -77,7 +80,7 @@
     "jvm": {}
   },
   "releaseTime": "2026-06-01T09:48:46Z",
-  "generateTime": "2026-07-21T06:15:46Z",
+  "generateTime": "2026-07-22T09:16:45Z",
   "libraries": [],
   "gitBranch": "steam/release",
   "gitHash": "1aa820d7bb66c4e55513cae04022bdacdac5b34e"

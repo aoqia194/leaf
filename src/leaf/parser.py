@@ -29,6 +29,7 @@ from leaf.models import (
     BuildManifestArgumentsEntry,
     DepotManifest,
     DepotManifestEntry,
+    Environment,
     GameInfo,
     GamePlatform,
     LauncherConfig,
@@ -147,9 +148,9 @@ def parse_game_info(
     class_path: list[str] = []
     arguments: BuildManifestArguments = BuildManifestArguments(game=[], jvm={})
 
-    # If we are JAR format, we can optionally get the main class from the manifest
-    # This is a backup option if there were no launcher manifests to read from
-    if is_jar_format:
+    # If we are JAR format, we can get the main class from the manifest
+    # For servers, this is always the client entrypoint too, so we can't.
+    if is_jar_format and game_platform.env == Environment.CLIENT:
         # Also match the main class string in the manifest
         with open(jar_manifest_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -191,9 +192,12 @@ def parse_game_info(
 
     if main_class is None:
         logger.warning("Main class not found!")
-        main_class = ""
-        # Just fall back to a hardcoded path because oh well.
-        # main_class = "zombie.gameStates.MainScreenState"
+        main_class = None
+
+        if game_platform.env == Environment.SERVER:
+            # Just fall back to a hardcoded path because cant find it anywhere else.
+            # Maybe we can parse linux bash script for it?
+            main_class = "zombie.network.GameServer"
 
     o = GameInfo(
         major=major,
