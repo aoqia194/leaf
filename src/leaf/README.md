@@ -1,11 +1,6 @@
 # Generator
 
-Here are just some useful modules/scripts I use to create the manifests.
-Most of these modules (like downloader, generator) can be run like a normal script with a main() function and will do things!
-
-## downloader.py
-
-Takes in the path to a txt file and runs DepotDownloader on all of the elements.
+Here lies a useful Python project I use to create the manifests.
 
 #### Requirements
 
@@ -15,13 +10,10 @@ Takes in the path to a txt file and runs DepotDownloader on all of the elements.
 #### Usage
 
 ```sh
-uv run python downloader.py --manifests-file manifests.txt --output-path "./manifests/{0}/" -filelist "files.txt"
-uv run python downloader.py --manifests-file manifests.txt --output-path "./manifests/" -manifest-only
+hatch run generate --overwrite
 ```
 
-Note that the `{0}` is a predefined format argument that corresponds to the manifest id.
-
-#### Input file example
+#### Manifests.txt file example
 
 You can prepare the input file by selecting the manifest table text from SteamDB and using regex:
 

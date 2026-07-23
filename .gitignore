@@ -6,10 +6,12 @@
 !/dist
 !/src
 
+!/.editorconfig
 !/.gitignore
 !/.python-version
 !/LICENSE
 !/NOTES.md
+!/manifest.txt
 !/pyproject.toml
 !/README.md
 !/uv.lock
