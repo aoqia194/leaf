@@ -11,7 +11,7 @@
 !/.python-version
 !/LICENSE
 !/NOTES.md
-!/manifest.txt
+!/manifests.txt
 !/pyproject.toml
 !/README.md
 !/uv.lock
