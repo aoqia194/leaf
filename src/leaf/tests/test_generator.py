@@ -7,6 +7,7 @@ from leaf.models import (
     DepotManifestEntry,
     GameInfo,
     GamePlatform,
+    LauncherConfig,
     MainClass,
     SteamInfo,
 )
@@ -21,9 +22,11 @@ def test_generate_version_manifest():
             git_branch="steam/release",
             git_hash="1aa820d7bb66c4e55513cae04022bdacdac5b34e",
             class_version=69,
-            main_class="zombie.gameStates.MainScreenState",
-            class_path=[".", "projectzomboid.jar"],
-            arguments=BuildManifestArguments(game=[], jvm={}),
+            launcher_config=LauncherConfig(
+                main_class="zombie.gameStates.MainScreenState",
+                classpath=[".", "projectzomboid.jar"],
+                vm_args=[],
+            ),
         )
         game_platform = GamePlatform(steam_info.depot_id)
         depot_manifest = DepotManifest(

@@ -239,9 +239,7 @@ class GameInfo:
     minor: int
     patch: int
     class_version: int
-    main_class: Optional[str]
-    class_path: list[str]
-    arguments: BuildManifestArguments
+    launcher_config: LauncherConfig
 
     git_branch: Optional[str] = None
     """ 
@@ -264,9 +262,9 @@ class LauncherConfig(IOJsonDataClass):
     Holds data that was parsed from a game launcher config
     """
 
-    main_class: str
-    classpath: list[str]
-    vm_args: list[str]
+    main_class: Optional[str] = filtered_optional_field()
+    classpath: Optional[list[str]] = filtered_optional_field()
+    vm_args: Optional[list[str]] = filtered_optional_field()
     windows: Optional[dict[str, Any]] = filtered_optional_field()
 
 
@@ -336,8 +334,12 @@ class BuildManifest(IOJsonDataClass):
         self.arguments.game.extend(other.game)
 
         for k1, v1 in other.jvm.items():
+            if v1 is None:
+                raise RuntimeError("Oopsies!")
+
             v2 = self.arguments.jvm.get(k1)
             if v2 is None:
+                self.arguments.jvm[k1] = v1
                 continue
 
             if v1.rules != v2.rules:
@@ -438,7 +440,7 @@ class BuildManifestAssetIndexesEntryValue(BaseJsonDataClass):
 @dataclass(slots=True)
 class BuildManifestArguments(BaseJsonDataClass):
     game: list[str]
-    jvm: dict[str, BuildManifestArgumentsEntry]
+    jvm: dict[str, Optional[BuildManifestArgumentsEntry]]
 
 
 @dataclass(slots=True)

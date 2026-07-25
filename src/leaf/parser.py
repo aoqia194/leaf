@@ -33,6 +33,7 @@ from leaf.models import (
     GameInfo,
     GamePlatform,
     LauncherConfig,
+    Platform,
 )
 
 
@@ -134,21 +135,24 @@ def parse_game_info(
 
     class_version = util.get_class_version(core_class_path)
 
-    # Parsing launcher config stuff
+    # Parsing game JAR / launcher config stuff
 
     launch_config_files = [
         next(game_folder.glob("**/ProjectZomboid64.json"), None),
         next(game_folder.glob("**/ProjectZomboid32.json"), None),
     ]
-    launcher_configs = [
-        parse_launcher_config(m) for m in launch_config_files if m is not None and m.exists()
-    ]
+    launcher_config: LauncherConfig = LauncherConfig()
+    launcher_config_file: Optional[Path] = None
+
+    for config in launch_config_files:
+        if config is not None and config.exists():
+            launcher_config = parse_launcher_config(config)
+            launcher_config_file = config
+            break
 
     main_class: Optional[str] = None
-    class_path: list[str] = []
-    arguments: BuildManifestArguments = BuildManifestArguments(game=[], jvm={})
 
-    # If we are JAR format, we can get the main class from the manifest
+    # If we are JAR format, we can get the main class from the JAR manifest
     # For servers, this is always the client entrypoint too, so we can't.
     if is_jar_format and game_platform.env == Environment.CLIENT:
         # Also match the main class string in the manifest
@@ -165,39 +169,41 @@ def parse_game_info(
         if main_class is None:
             raise RuntimeError("Failed to parse game info: no main class found in jar manifest")
 
-    if len(launcher_configs) > 0:
-        first_config_file = next((f for f in launch_config_files if f is not None), None)
-        first = next((c for c in launcher_configs if c is not None), None)
-        if first_config_file is not None and first is not None:
-            if main_class is None:
-                main_class = first.main_class.replace("/", ".")
-                logger.trace("Found main class in launcher config")
+    # try to parse the launcher configs
+    if launcher_config is not None:
+        if main_class is None and launcher_config.main_class is not None:
+            launcher_config.main_class = launcher_config.main_class.replace("/", ".")
+            logger.trace("Found main class in launcher config")
+        else:
+            launcher_config.main_class = main_class
 
-            class_path.extend(first.classpath)
-
-            for arg in first.vm_args:
-                stem = first_config_file.stem
-                arguments.jvm[arg] = BuildManifestArgumentsEntry(
-                    rules=[
-                        ArgumentRule(
-                            allow=True,
-                            platform=ArgumentRulePlatform(
-                                name=game_platform.platform.value,
-                                arch=f"x{"64" if stem == "ProjectZomboid64.json" else "86"}",
-                            ),
-                        )
-                    ],
-                )
+        if launcher_config_file is not None and launcher_config.vm_args is not None:
+            # TODO: Do this at merge time, create new rules for arguments that are platform-specific
+            #   Arguments should be considered platform-agnostic until considered otherwise.
+            # for arg in launcher_config.vm_args:
+            #     stem = launcher_config_file.stem
+            #     launcher.jvm[arg] = BuildManifestArgumentsEntry(
+            #         rules=[
+            #             ArgumentRule(
+            #                 allow=True,
+            #                 platform=ArgumentRulePlatform(
+            #                     name=game_platform.platform.value,
+            #                     arch=f"x{"64" if stem == "ProjectZomboid64.json" else "86"}",
+            #                 ),
+            #             )
+            #         ],
+            #     )
             logger.trace("Found jvm arguments in launcher config")
 
-    if main_class is None:
-        logger.warning("Main class not found!")
-        main_class = None
-
-        if game_platform.env == Environment.SERVER:
+    if launcher_config.main_class is None:
+        # pre-42 macos builds have no way of reliably obtaining main class
+        # TODO: maybe we can pass game launch scripts or other executable files?
+        if game_platform.env == Environment.CLIENT and game_platform.platform != Platform.MACOS:
+            raise RuntimeError("Main class not found!")
+        elif game_platform.env == Environment.SERVER:
             # Just fall back to a hardcoded path because cant find it anywhere else.
             # Maybe we can parse linux bash script for it?
-            main_class = "zombie.network.GameServer"
+            launcher_config.main_class = "zombie.network.GameServer"
 
     o = GameInfo(
         major=major,
@@ -207,9 +213,7 @@ def parse_game_info(
         git_hash=git_hash,
         revision=revision,
         class_version=class_version,
-        main_class=main_class,
-        class_path=class_path,
-        arguments=arguments,
+        launcher_config=launcher_config,
     )
 
     stop = perf_counter()
@@ -218,7 +222,7 @@ def parse_game_info(
     return o
 
 
-def parse_launcher_config(input_file: Path) -> Optional[LauncherConfig]:
+def parse_launcher_config(input_file: Path) -> LauncherConfig:
     """
     Parses the launcher config whilst also removing unnecessary things.
     """
@@ -226,11 +230,7 @@ def parse_launcher_config(input_file: Path) -> Optional[LauncherConfig]:
     logger.trace("Parsing launcher config...")
     start = perf_counter()
 
-    try:
-        config = LauncherConfig.read_file(input_file)
-    except RuntimeError as e:
-        logger.warning(str(e))
-        return None
+    config = LauncherConfig.read_file(input_file)
 
     # config.vm_args[:] = [
     #     arg for arg in config.vm_args if not arg.startswith("-Xms") and not arg.startswith("-Xmx")

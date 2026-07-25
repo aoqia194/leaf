@@ -25,7 +25,16 @@ from leaf.constants import (
     LOGS_PATH,
     VINEFLOWER_PATH,
 )
-from leaf.models import Environment, GameInfo, GamePlatform, Platform, SemVer, SteamInfo
+from leaf.models import (
+    ArgumentRule,
+    ArgumentRulePlatform,
+    Environment,
+    GameInfo,
+    GamePlatform,
+    Platform,
+    SemVer,
+    SteamInfo,
+)
 
 
 def is_optional(type_hint: Any) -> bool:
@@ -113,6 +122,13 @@ def remove_null_inplace(data: object, only_optionals: bool = True) -> object:
             return data
 
     raise RuntimeError("Tried to remove null inplace on an unsupported data type", type(data))
+
+
+def create_argument_rule(game_platform: GamePlatform, allow: bool = True):
+    # TODO: multi-arch support?
+    return ArgumentRule(
+        allow=allow, platform=ArgumentRulePlatform(name=game_platform.platform.value, arch="x64")
+    )
 
 
 def to_version_label(game_info: GameInfo, steam_info: SteamInfo) -> str:

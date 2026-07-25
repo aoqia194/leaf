@@ -77,10 +77,156 @@
   "classPath": [],
   "arguments": {
     "game": [],
-    "jvm": {}
+    "jvm": {
+      "-Djava.awt.headless=true": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          },
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Xmx3072m": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          },
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Dzomboid.steam=1": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          },
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Dzomboid.znetlog=1": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          },
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Djava.library.path=linux64/:.": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Djava.security.egd=file:/dev/./urandom": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-XX:+UseZGC": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-XX:-OmitStackTraceInFastThrow": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "linux",
+              "arch": "x64"
+            }
+          },
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-Djava.library.path=win64/;.": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      },
+      "-XX:-CreateCoredumpOnCrash": {
+        "rules": [
+          {
+            "allow": true,
+            "platform": {
+              "name": "windows",
+              "arch": "x64"
+            }
+          }
+        ]
+      }
+    }
   },
   "releaseTime": "2026-06-01T09:48:46Z",
-  "generateTime": "2026-07-22T09:16:45Z",
+  "generateTime": "2026-07-25T06:50:48Z",
   "libraries": [],
   "gitBranch": "steam/release",
   "gitHash": "1aa820d7bb66c4e55513cae04022bdacdac5b34e"

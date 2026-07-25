@@ -20,9 +20,12 @@ from leaf.constants import (
     MANIFESTS_URL,
 )
 from leaf.models import (
+    ArgumentRule,
     AssetManifest,
     AssetManifestEntry,
     BuildManifest,
+    BuildManifestArguments,
+    BuildManifestArgumentsEntry,
     BuildManifestAssetIndexes,
     BuildManifestAssetIndexesEntry,
     BuildManifestAssetIndexesEntryValue,
@@ -303,7 +306,14 @@ def create_build_manifest(
     env = game_platform.env
 
     main_class = MainClass(client=None, server=None)
-    main_class.set_env_field(env, game_info.main_class)
+    main_class.set_env_field(env, game_info.launcher_config.main_class)
+
+    # Convert args to build manifest structure
+    jvm_args: dict[str, Optional[BuildManifestArgumentsEntry]] = {}
+    for arg in game_info.launcher_config.vm_args or []:
+        jvm_args[arg] = BuildManifestArgumentsEntry(
+            rules=[util.create_argument_rule(game_platform)]
+        )
 
     data = BuildManifest(
         id=version_label,
@@ -317,8 +327,8 @@ def create_build_manifest(
             server=BuildManifestManifestsEntry(common=[]),
         ),
         asset_indexes=asset_manifest_ref,
-        arguments=game_info.arguments,
-        class_path=game_info.class_path,
+        arguments=BuildManifestArguments(game=[], jvm=jvm_args),
+        class_path=game_info.launcher_config.classpath or [],
         release_time=depot_manifest.manifest_date,
         generate_time=GENERATE_DATE,
         libraries=[],
