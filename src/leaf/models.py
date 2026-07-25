@@ -450,14 +450,13 @@ class BuildManifestArgumentsEntry(BaseJsonDataClass):
 
 @dataclass(slots=True)
 class ArgumentRule(BaseJsonDataClass):
-    allow: str
-    platform: ArgumentRulePlatform
+    action: str
+    os: ArgumentRulePlatform
 
 
 @dataclass(slots=True)
 class ArgumentRulePlatform(BaseJsonDataClass):
     name: str
-    arch: str
 
 
 @dataclass(slots=True)

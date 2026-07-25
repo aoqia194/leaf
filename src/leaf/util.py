@@ -124,11 +124,9 @@ def remove_null_inplace(data: object, only_optionals: bool = True) -> object:
     raise RuntimeError("Tried to remove null inplace on an unsupported data type", type(data))
 
 
-def create_argument_rule(game_platform: GamePlatform, allow: str = "true"):
+def create_argument_rule(game_platform: GamePlatform, action: str = "allow"):
     # TODO: multi-arch support?
-    return ArgumentRule(
-        allow=allow, platform=ArgumentRulePlatform(name=game_platform.platform.value, arch="x64")
-    )
+    return ArgumentRule(action=action, os=ArgumentRulePlatform(name=game_platform.platform.value))
 
 
 def to_version_label(game_info: GameInfo, steam_info: SteamInfo) -> str:

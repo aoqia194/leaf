@@ -81,17 +81,15 @@
       "-Djava.awt.headless=true": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           },
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -99,17 +97,15 @@
       "-Xmx3072m": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           },
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -117,17 +113,15 @@
       "-Dzomboid.steam=1": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           },
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -135,17 +129,15 @@
       "-Dzomboid.znetlog=1": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           },
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -153,10 +145,9 @@
       "-Djava.library.path=linux64/:.": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           }
         ]
@@ -164,10 +155,9 @@
       "-Djava.security.egd=file:/dev/./urandom": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           }
         ]
@@ -175,10 +165,9 @@
       "-XX:+UseZGC": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           }
         ]
@@ -186,17 +175,15 @@
       "-XX:-OmitStackTraceInFastThrow": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "linux",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "linux"
             }
           },
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -204,10 +191,9 @@
       "-Djava.library.path=win64/;.": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -215,10 +201,9 @@
       "-XX:-CreateCoredumpOnCrash": {
         "rules": [
           {
-            "allow": "true",
-            "platform": {
-              "name": "windows",
-              "arch": "x64"
+            "action": "allow",
+            "os": {
+              "name": "windows"
             }
           }
         ]
@@ -226,7 +211,7 @@
     }
   },
   "releaseTime": "2026-06-01T09:48:46Z",
-  "generateTime": "2026-07-25T07:08:06Z",
+  "generateTime": "2026-07-25T07:16:23Z",
   "libraries": [],
   "gitBranch": "steam/release",
   "gitHash": "1aa820d7bb66c4e55513cae04022bdacdac5b34e"
