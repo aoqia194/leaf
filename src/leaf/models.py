@@ -450,7 +450,7 @@ class BuildManifestArgumentsEntry(BaseJsonDataClass):
 
 @dataclass(slots=True)
 class ArgumentRule(BaseJsonDataClass):
-    allow: bool
+    allow: str
     platform: ArgumentRulePlatform
 
 

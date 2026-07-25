@@ -124,7 +124,7 @@ def remove_null_inplace(data: object, only_optionals: bool = True) -> object:
     raise RuntimeError("Tried to remove null inplace on an unsupported data type", type(data))
 
 
-def create_argument_rule(game_platform: GamePlatform, allow: bool = True):
+def create_argument_rule(game_platform: GamePlatform, allow: str = "true"):
     # TODO: multi-arch support?
     return ArgumentRule(
         allow=allow, platform=ArgumentRulePlatform(name=game_platform.platform.value, arch="x64")

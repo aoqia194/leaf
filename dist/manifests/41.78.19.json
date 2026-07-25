@@ -81,14 +81,14 @@
       "-Djava.awt.headless=true": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
             }
           },
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -99,14 +99,14 @@
       "-Xmx3072m": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
             }
           },
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -117,14 +117,14 @@
       "-Dzomboid.steam=1": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
             }
           },
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -135,14 +135,14 @@
       "-Dzomboid.znetlog=1": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
             }
           },
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -153,7 +153,7 @@
       "-Djava.library.path=linux64/:.": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
@@ -164,7 +164,7 @@
       "-Djava.security.egd=file:/dev/./urandom": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
@@ -175,7 +175,7 @@
       "-XX:+UseZGC": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
@@ -186,14 +186,14 @@
       "-XX:-OmitStackTraceInFastThrow": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "linux",
               "arch": "x64"
             }
           },
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -204,7 +204,7 @@
       "-Djava.library.path=win64/;.": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -215,7 +215,7 @@
       "-XX:-CreateCoredumpOnCrash": {
         "rules": [
           {
-            "allow": true,
+            "allow": "true",
             "platform": {
               "name": "windows",
               "arch": "x64"
@@ -226,6 +226,6 @@
     }
   },
   "releaseTime": "2026-04-08T12:45:32Z",
-  "generateTime": "2026-07-25T06:50:48Z",
+  "generateTime": "2026-07-25T07:08:06Z",
   "libraries": []
 }
