@@ -76,7 +76,9 @@ def generate(steam_info: SteamInfo, overwrite: bool = False):
     decompiler_input, decompile_output_path = util.prepare_game_files(
         steam_info, game_platform, output_path
     )
-    game_info = parser.parse_game_info(decompiler_input, decompile_output_path, game_platform)
+    game_info = parser.parse_game_info(
+        decompiler_input, decompile_output_path, game_platform, steam_info
+    )
     version_label = util.to_version_label(game_info, steam_info)
 
     generate_internal(steam_info, game_info, game_platform, version_label)

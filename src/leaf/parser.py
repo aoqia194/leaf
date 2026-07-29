@@ -23,10 +23,6 @@ from leaf.constants import (
     REVISION_NUMBER_STR,
 )
 from leaf.models import (
-    ArgumentRule,
-    ArgumentRulePlatform,
-    BuildManifestArguments,
-    BuildManifestArgumentsEntry,
     DepotManifest,
     DepotManifestEntry,
     Environment,
@@ -34,11 +30,15 @@ from leaf.models import (
     GamePlatform,
     LauncherConfig,
     Platform,
+    SteamInfo,
 )
 
 
 def parse_game_info(
-    input_path: Path, decompile_output_path: Path, game_platform: GamePlatform
+    input_path: Path,
+    decompile_output_path: Path,
+    game_platform: GamePlatform,
+    steam_info: SteamInfo,
 ) -> GameInfo:
     """
     Parses given game files and creates a populated object.
@@ -115,7 +115,7 @@ def parse_game_info(
                     break
 
                 if git_hash is None:
-                    git_hash = util.find_at_pos(line, GIT_HASH_STR, '"')
+                    git_hash = util.find_at_pos(line, GIT_HASH_STR, '"', case_sensitive=False)
                     continue
 
                 if git_branch is None:
@@ -130,7 +130,7 @@ def parse_game_info(
                         git_hash = values[1]
                         continue
 
-        if git_branch is None or git_hash is None:
+        if (steam_info.branch != "public" and git_branch is None) or git_hash is None:
             raise RuntimeError("Failed to parse game info: no branch or hash found")
 
     class_version = util.get_class_version(core_class_path)

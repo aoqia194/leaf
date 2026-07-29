@@ -146,8 +146,14 @@ class SemVer:
     def parse(cls, s: str):
         logger.trace("Parsing version: {}", s)
 
-        if "-" in s:
+        hasBranchName = "-" in s
+        hasRevisionNumber = "." in s
+        hasBuildNumber = "+" in s
+
+        if hasBranchName:
             version_num, rest = s.split("-", 1)
+        elif hasBuildNumber:
+            version_num, rest = s.split("+", 1)
         else:
             version_num = s
             rest = None
@@ -158,8 +164,9 @@ class SemVer:
         build_id = None
 
         if rest is not None:
-            if "+" in rest:
-                branch, build_id = rest.split("+", 1)
+            if hasBuildNumber:
+                branch = version_num
+                build_id = rest
             else:
                 branch, build_id = rest.split(".", 1)
 

@@ -333,8 +333,8 @@ def get_class_version(file: Path) -> int:
         return ord(f.read(1))
 
 
-def find_at_pos(s: str, prefix: str, terminator: str) -> Optional[str]:
-    start = s.find(prefix)
+def find_at_pos(s: str, prefix: str, terminator: str, case_sensitive: bool = True) -> Optional[str]:
+    start = (case_sensitive and s or s.lower()).find((case_sensitive and prefix or prefix.lower()))
     if start != -1:
         start += len(prefix)
         end = s.find(terminator, start)
