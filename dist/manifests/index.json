@@ -1,36 +1,36 @@
 {
   "latest": {
-    "public": "42.20.0+a294772",
+    "public": "42.20.0",
     "unstable": "42.19.0-unstable+1aa820d"
   },
   "versions": {
-    "42.20.0+a294772": {
-      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.20.0+a294772.json",
-      "size": "5743",
-      "hash": "4740cbff3ae185570b8b2fedfd0897ad05884761",
+    "42.20.0": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.20.0.json",
+      "size": "5679",
+      "hash": "d738ed3feed7dcb334aa84c78b404c06df5a6c8f",
       "releaseTime": "2026-07-29T09:23:18Z",
-      "generateTime": "2026-07-29T11:45:34Z"
+      "generateTime": "2026-07-30T14:29:18Z"
     },
     "42.19.0-unstable+1aa820d": {
       "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.19.0-unstable+1aa820d.json",
       "size": "5212",
-      "hash": "dec9f38674ecfcb51722c570ee91c9f7b7dce2a4",
+      "hash": "e7fbea0b10d0d5189c677a126612ec6854e058ac",
       "releaseTime": "2026-06-01T09:48:46Z",
-      "generateTime": "2026-07-29T11:45:34Z"
+      "generateTime": "2026-07-30T14:29:18Z"
     },
     "42.1.0-unstable.25882": {
       "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.1.0-unstable.25882.json",
       "size": "3981",
-      "hash": "18d0326fce662fa9fe3121efe2fefe273503eef1",
+      "hash": "1fa613f87d50adb05d4e2424ad1f5acc19c2f370",
       "releaseTime": "2025-01-21T12:08:45Z",
-      "generateTime": "2026-07-29T11:45:34Z"
+      "generateTime": "2026-07-30T14:29:18Z"
     },
     "41.78.19": {
       "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/41.78.19.json",
       "size": "4993",
-      "hash": "49836c93a6838397cc09aa9a54eba3537045a55f",
+      "hash": "07ae875b36f316e885bdae5ffcf279f89ae80e80",
       "releaseTime": "2026-04-08T12:45:32Z",
-      "generateTime": "2026-07-29T11:45:34Z"
+      "generateTime": "2026-07-30T14:29:18Z"
     }
   }
 }

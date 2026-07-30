@@ -135,11 +135,11 @@ def to_version_label(game_info: GameInfo, steam_info: SteamInfo) -> str:
     if steam_info.branch != "public":
         version_label += f"-{steam_info.branch}"
 
-    if game_info.revision is not None:
-        version_label += f".{game_info.revision}"
+        if game_info.revision is not None:
+            version_label += f".{game_info.revision}"
 
-    if game_info.git_hash is not None:
-        version_label += f"+{game_info.git_hash[:7]}"
+        if game_info.git_hash is not None:
+            version_label += f"+{game_info.git_hash[:7]}"
 
     return version_label
 

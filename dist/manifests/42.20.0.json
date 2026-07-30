@@ -1,5 +1,5 @@
 {
-  "id": "42.20.0+a294772",
+  "id": "42.20.0",
   "steamBranch": "public",
   "javaVersion": 25,
   "mainClass": {
@@ -38,39 +38,39 @@
       "macos": {
         "sha1": "2f0cd72be86cb0d3f47573d7754dcdeae2c09dec",
         "size": "7212110",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.20.0.json"
       },
       "linux": {
         "sha1": "00029a98829efa4ad480863af8c155fcbb3f0312",
         "size": "6253485",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.20.0.json"
       },
       "windows": {
         "sha1": "fa33212de7250685f711f300fc6118eeacf4a8ca",
         "size": "5541610",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.20.0.json"
       }
     },
     "server": {
       "macos": {
         "sha1": "7db54f5446b4ec925f5e969138eaf0c6803c6240",
         "size": "33826",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.20.0.json"
       },
       "linux": {
         "sha1": "08abb4109c66c100f9961e0adb13617517d9664b",
         "size": "30540",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.20.0.json"
       },
       "windows": {
         "sha1": "11286f7d0af341b12715a14ef9d3f5a9811151b9",
         "size": "36093",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.20.0.json"
       },
       "common": {
         "sha1": "04c0c1fdd970833d77260a97ed51d6138202b646",
         "size": "4516851",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/common/42.20.0+a294772.json"
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/common/42.20.0.json"
       }
     }
   },
@@ -243,7 +243,7 @@
     }
   },
   "releaseTime": "2026-07-29T09:23:18Z",
-  "generateTime": "2026-07-29T11:45:34Z",
+  "generateTime": "2026-07-30T14:29:18Z",
   "libraries": [],
   "gitHash": "a2947723ca"
 }
