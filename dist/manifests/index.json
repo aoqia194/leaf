@@ -1,9 +1,23 @@
 {
   "latest": {
-    "public": "42.20.0",
+    "public": "42.20.2",
     "unstable": "42.19.0-unstable+1aa820d"
   },
   "versions": {
+    "42.20.2": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.20.2.json",
+      "size": "4905",
+      "hash": "ce9c91ef6692b7305474b2e83a9e61defb7b2f48",
+      "releaseTime": "2026-08-05T14:58:26Z",
+      "generateTime": "2026-08-06T01:28:13Z"
+    },
+    "42.20.1": {
+      "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.20.1.json",
+      "size": "4905",
+      "hash": "b2466c17224b834a68485fa2e098f2801cd3dbf5",
+      "releaseTime": "2026-08-05T09:12:38Z",
+      "generateTime": "2026-08-06T01:28:13Z"
+    },
     "42.20.0": {
       "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/manifests/42.20.0.json",
       "size": "5679",
