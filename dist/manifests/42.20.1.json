@@ -19,9 +19,15 @@
       ]
     },
     "server": {
-      "macos": [],
-      "linux": [],
-      "windows": [],
+      "macos": [
+        "918325764650181813"
+      ],
+      "linux": [
+        "4894029153115054997"
+      ],
+      "windows": [
+        "8626440533803009640"
+      ],
       "common": [
         "7018276910171422442"
       ]
@@ -46,6 +52,21 @@
       }
     },
     "server": {
+      "macos": {
+        "sha1": "7db54f5446b4ec925f5e969138eaf0c6803c6240",
+        "size": "33826",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.20.1.json"
+      },
+      "linux": {
+        "sha1": "08abb4109c66c100f9961e0adb13617517d9664b",
+        "size": "30540",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.20.1.json"
+      },
+      "windows": {
+        "sha1": "11286f7d0af341b12715a14ef9d3f5a9811151b9",
+        "size": "36093",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.20.1.json"
+      },
       "common": {
         "sha1": "5161e454653200a0d84e22f2648667d2db728c86",
         "size": "4516851",
@@ -222,7 +243,7 @@
     }
   },
   "releaseTime": "2026-08-05T09:12:38Z",
-  "generateTime": "2026-08-06T01:28:13Z",
+  "generateTime": "2026-08-06T02:44:43Z",
   "libraries": [],
   "gitHash": "77d7d5d0d7"
 }
