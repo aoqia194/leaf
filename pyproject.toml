@@ -11,6 +11,7 @@ dependencies = [
     "loguru>=0.7.3",
     "project-paths>=1.1.1",
     "python-dotenv>=1.2.2",
+    "sortedcontainers>=2.4.0",
 ]
 
 [project.scripts]
