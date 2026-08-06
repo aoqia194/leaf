@@ -9,7 +9,6 @@ from time import perf_counter
 from typing import Optional
 
 from loguru import logger
-from sortedcontainers import SortedDict
 
 from leaf import parser, util
 from leaf.constants import (
@@ -180,7 +179,7 @@ def generate_index_manifest(
 
 
 def create_index_manifest() -> IndexManifest:
-    return IndexManifest(latest={}, versions=SortedDict({}))
+    return IndexManifest(latest={}, versions={})
 
 
 def generate_asset_manifest(

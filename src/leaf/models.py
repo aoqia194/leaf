@@ -292,7 +292,19 @@ class IndexManifest(IOJsonDataClass):
     """
     Holds the latest steam_branch->version info
     """
-    versions: dict[str, IndexManifestVersion]
+    versions: dict[str, IndexManifestVersion] = field(
+        default_factory=dict,
+        metadata=config(
+            decoder=lambda d: {
+                k: IndexManifestVersion.from_dict(v) if isinstance(v, dict) else v
+                for k, v in d.items()
+            },
+            encoder=lambda d: {
+                k: v.to_dict() if hasattr(v, "to_dict") else v
+                for k, v in sorted(d.items(), reverse=True, key=lambda item: item[0])
+            },
+        ),
+    )
 
 
 @dataclass(slots=True)
