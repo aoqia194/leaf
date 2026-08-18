@@ -34,7 +34,7 @@ def download(
 
     steam_username = os.environ["DEPOTDOWNLOADER_USERNAME"]
     argslist = [
-        "depotdownloader",
+        "DepotDownloader",
         "-username",
         steam_username,
         "-remember-password",
