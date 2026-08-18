@@ -12,7 +12,7 @@ The generator is written in Python. It used to be in Rust for maximum speed, but
 
 Setting up the generator requires [uv](https://docs.astral.sh/uv/getting-started/installation/). Also requires [DepotDownloader](https://github.com/steamre/depotdownloader) to be installed and on your path.
 
-Running `uv venv` and then `uv sync` in the repository root will set up the Python virtual env and install all project dependencies through uv.
+Running `uv sync` in the repository root will set up the Python virtual env and install all project dependencies through uv.
 You may have to manually source the venv yourself if your shell doesn't automatically do it.
 For example (using Fish shell):
 
