@@ -1,0 +1,249 @@
+{
+  "id": "42.21.0",
+  "steamBranch": "public",
+  "javaVersion": 25,
+  "mainClass": {
+    "client": "zombie.gameStates.MainScreenState",
+    "server": "zombie.network.GameServer"
+  },
+  "manifests": {
+    "client": {
+      "macos": [
+        "6227964391387020578"
+      ],
+      "linux": [
+        "1215816700457910954"
+      ],
+      "windows": [
+        "7544133343391543313"
+      ]
+    },
+    "server": {
+      "macos": [
+        "4038840949970867469"
+      ],
+      "linux": [
+        "494608608446689230"
+      ],
+      "windows": [
+        "6288256085912821612"
+      ],
+      "common": [
+        "5337933334995336130"
+      ]
+    }
+  },
+  "assetIndexes": {
+    "client": {
+      "macos": {
+        "sha1": "335999e893ba4c6f22e51129e0c8e92cfec4e601",
+        "size": "7211879",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.21.0.json"
+      },
+      "linux": {
+        "sha1": "cb6f9194bb2db0ac20380e41425f33dc609c835e",
+        "size": "6253293",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.21.0.json"
+      },
+      "windows": {
+        "sha1": "6f4736a1a0070b599bd4d588fc50072af67ebb8d",
+        "size": "5541447",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.21.0.json"
+      }
+    },
+    "server": {
+      "macos": {
+        "sha1": "3983a508657295c8ca0bf3266f7bc0500be713c1",
+        "size": "33826",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.21.0.json"
+      },
+      "linux": {
+        "sha1": "09a4beebc97af9557b6fcc01bbb04a34c1d9b777",
+        "size": "30540",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.21.0.json"
+      },
+      "windows": {
+        "sha1": "a41a2f933eab0cb49876688981a76bbf43387319",
+        "size": "36093",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.21.0.json"
+      },
+      "common": {
+        "sha1": "2d927be4c0aec7774b96017069b2f3f7ea28e8a3",
+        "size": "4516601",
+        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/common/42.21.0.json"
+      }
+    }
+  },
+  "classPath": [],
+  "arguments": {
+    "game": [],
+    "jvm": {
+      "-Djava.awt.headless=true": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "--enable-native-access=ALL-UNNAMED": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-Xmx3072m": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-Dzomboid.steam=1": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-Dzomboid.znetlog=1": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-Djava.library.path=natives/": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          }
+        ]
+      },
+      "-Djava.security.egd=file:/dev/./urandom": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          }
+        ]
+      },
+      "-XX:+UseZGC": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          }
+        ]
+      },
+      "-XX:-OmitStackTraceInFastThrow": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "linux"
+            }
+          },
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-Djava.library.path=win64/;.": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      },
+      "-XX:-CreateCoredumpOnCrash": {
+        "rules": [
+          {
+            "action": "allow",
+            "os": {
+              "name": "windows"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "releaseTime": "2026-09-23T15:35:03Z",
+  "generateTime": "2026-09-29T02:18:06Z",
+  "libraries": [],
+  "gitHash": "4a0e9546ec"
+}

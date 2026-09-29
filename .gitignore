@@ -11,6 +11,7 @@
 !/.python-version
 !/LICENSE
 !/NOTES.md
+!/manifest_history.txt
 !/manifests.txt
 !/pyproject.toml
 !/README.md
