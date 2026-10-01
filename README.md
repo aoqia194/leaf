@@ -1,4 +1,20 @@
-# Leaf
+<div align="center">
+
+<h1>
+    The data repository for
+    <a href="https://pzwiki.net/wiki/Leaf">
+        <img src="https://github.com/LeafPZ.png" width="24px" alt="LeafPZ Icon">
+        leaf
+    </a>
+</h1>
+
+![License](https://img.shields.io/github/license/LeafPZ/leaf?label=License)
+![Python version](https://img.shields.io/badge/Python-3.14.0-blue?logo=python)
+![Test status](https://github.com/LeafPZ/leaf/actions/workflows/test.yml/badge.svg?branch=main&label=test)
+![Code Size](https://img.shields.io/github/languages/code-size/LeafPZ/leaf?label=Code%20Size)
+![Maven status](https://img.shields.io/website?url=https%3A%2F%2Fmaven.aoqia.dev%2F&label=Maven)
+
+</div>
 
 A place to store all of the things I need for Java modding to be publicly available.
 This repository so far contains creation and storage of version manifests which are parsed from Steam manifest data, and also file hash tables so you can check if an install is valid.
@@ -33,8 +49,8 @@ You can see all of the hatch buildscripts and what they do in the [pyproject.tom
 
 # Outputs
 
-After running the generator, it will cache downloaded content from Steam in `out/.cache`. These files will be reused if the generator is run again. All generated content for public viewing (such as index manifests and build manifests) will be in `dist/indexes` and `dist/manifests` respectively. `dist/loader` is reserved for [leaf-loader](https://github.com/aoqia194/leaf-loader) manifests and are only used by [leaf-installer](https://github.com/aoqia194/leaf-installer).
+After running the generator, it will cache downloaded content from Steam in `out/.cache`. These files will be reused if the generator is run again. All generated content for public viewing (such as index manifests and build manifests) will be in `dist/indexes` and `dist/manifests` respectively. `dist/loader` is reserved for [leaf-loader](https://github.com/LeafPZ/leaf-loader) manifests and are only used by [leaf-installer](https://github.com/LeafPZ/leaf-installer).
 
 # Contributing
 
-If you want to contribute in any way to the function of the leaf toolchain as a whole, you might want to take a look at the issues on the respective repositories, or use the project board I've set up [here](https://github.com/users/aoqia194/projects/6/views/1),
+If you want to contribute in any way to the function of the leaf toolchain as a whole, you might want to take a look at the issues on the respective repositories.

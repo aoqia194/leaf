@@ -38,39 +38,39 @@
       "macos": {
         "sha1": "bf5c5a3261b22cd61d6bbe9e55f6f4dd03f5c219",
         "size": "3843896",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/macos/41.78.19.json"
       },
       "linux": {
         "sha1": "6cc5e57d23a80a4930eb44fae9ba588657f9434b",
         "size": "3343219",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/linux/41.78.19.json"
       },
       "windows": {
         "sha1": "11cae9d04816d35c47db2078a911f30c7d2ff840",
         "size": "2993452",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/windows/41.78.19.json"
       }
     },
     "server": {
       "macos": {
         "sha1": "dd44f619e36bdf779cc38719ec869ea1d2239916",
         "size": "1069",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/macos/41.78.19.json"
       },
       "linux": {
         "sha1": "fca28f3b417cf8494752af5e72c1939bf9d62b3d",
         "size": "28999",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/linux/41.78.19.json"
       },
       "windows": {
         "sha1": "3c17b61ab9e1a392c6c2ac390700348457b701c9",
         "size": "68001",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/windows/41.78.19.json"
       },
       "common": {
         "sha1": "14da7a705746556e3e86fd1b3ee6660042db2f45",
         "size": "2417269",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/common/41.78.19.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/common/41.78.19.json"
       }
     }
   },

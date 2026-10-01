@@ -38,39 +38,39 @@
       "macos": {
         "sha1": "969db505322c4168883721791f09e02ac67f6535",
         "size": "7111983",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.19.0-unstable+1aa820d.json"
       },
       "linux": {
         "sha1": "c6eb8b5f0a48b89d785ad5da6e847a35ff4610a0",
         "size": "6166395",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.19.0-unstable+1aa820d.json"
       },
       "windows": {
         "sha1": "07cdc1bad14f3a8c7fc3c1c82d0f80df9a136141",
         "size": "5464241",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.19.0-unstable+1aa820d.json"
       }
     },
     "server": {
       "macos": {
         "sha1": "de83d6f5eb3ac78e4ca2300b86433f60d54f774c",
         "size": "33595",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/macos/42.19.0-unstable+1aa820d.json"
       },
       "linux": {
         "sha1": "d6d188fab3a4a253bbef40bdcf8c9aa4ce60cb3e",
         "size": "30104",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/linux/42.19.0-unstable+1aa820d.json"
       },
       "windows": {
         "sha1": "427e4b3a58af12bf412190135cf280ff817894b0",
         "size": "36343",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/windows/42.19.0-unstable+1aa820d.json"
       },
       "common": {
         "sha1": "840c74b789b78cde968001d3ea59af7d2ebb868f",
         "size": "4440380",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/server/common/42.19.0-unstable+1aa820d.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/server/common/42.19.0-unstable+1aa820d.json"
       }
     }
   },

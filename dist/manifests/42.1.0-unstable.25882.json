@@ -30,17 +30,17 @@
       "macos": {
         "sha1": "2e2181986f681d3ab38541802083e8f821b59e02",
         "size": "7403112",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.1.0-unstable.25882.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/macos/42.1.0-unstable.25882.json"
       },
       "linux": {
         "sha1": "d8732c9ed0a702a26dfb5297c2c0017cffd98152",
         "size": "6454061",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.1.0-unstable.25882.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/linux/42.1.0-unstable.25882.json"
       },
       "windows": {
         "sha1": "713f312e2d0e6913b83882836820178c4a7ca151",
         "size": "5749705",
-        "url": "https://github.com/aoqia194/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.1.0-unstable.25882.json"
+        "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/indexes/client/windows/42.1.0-unstable.25882.json"
       }
     },
     "server": {}

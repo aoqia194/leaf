@@ -74,8 +74,8 @@ with FILELIST_FILE as _:
 #     r"^\s*(?P<size>\d+)\s*(?P<chunks>\d+)\s*(?P<hash>\w+)\s*(?P<flags>\d+)\s*(?P<name>.+)"
 # )
 
-INDEXES_URL = f"https://github.com/aoqia194/leaf/raw/refs/heads/main/{os.path.relpath(INDEXES_PATH, paths.root)}"
-MANIFESTS_URL = f"https://github.com/aoqia194/leaf/raw/refs/heads/main/{os.path.relpath(MANIFESTS_PATH, paths.root)}"
+INDEXES_URL = f"https://github.com/LeafPZ/leaf/raw/refs/heads/main/{os.path.relpath(INDEXES_PATH, paths.root)}"
+MANIFESTS_URL = f"https://github.com/LeafPZ/leaf/raw/refs/heads/main/{os.path.relpath(MANIFESTS_PATH, paths.root)}"
 
 DATE_FMT_MANIFEST = r"%m/%d/%Y %H:%M:%S"
 DATE_FMT_8601 = r"%Y-%m-%dT%H:%M:%SZ"
