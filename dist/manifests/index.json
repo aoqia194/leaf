@@ -6,10 +6,10 @@
   "versions": {
     "42.21.0": {
       "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/manifests/42.21.0.json",
-      "size": "5679",
-      "hash": "78145de54db26d563c35a5a6ec3bd29a3fe9a7ee",
+      "size": "5665",
+      "hash": "702ef159fc85472f5e6ac396ce5209841cfb4fe6",
       "releaseTime": "2026-09-23T15:35:03Z",
-      "generateTime": "2026-09-29T02:18:06Z"
+      "generateTime": "2026-10-02T17:36:30Z"
     },
     "42.20.4": {
       "url": "https://github.com/LeafPZ/leaf/raw/refs/heads/main/dist/manifests/42.20.4.json",
