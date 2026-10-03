@@ -13,9 +13,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Setup UV
-        uses: astral-sh/setup-uv@v8.1.0
+        # v10.2.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
       - name: Sync UV
         run: uv sync
       - name: Run tests with pytest
